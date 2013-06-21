@@ -37,11 +37,14 @@ module ActsAsRoleRestricted
 
     # Returns all records which have been assigned any of the given roles, as well as any record with no role assigned
     def for_role(*roles)
-      where(with_role_sql(roles) + " OR (#{self.table_name}.roles_mask = 0) OR (#{self.table_name}.roles_mask IS NULL)")
+      sql = with_role_sql(roles) || ''
+      sql += ' OR ' if sql.present?
+      sql += "(#{self.table_name}.roles_mask = 0) OR (#{self.table_name}.roles_mask IS NULL)"
+      where(sql)
     end
 
     def with_role_sql(*roles)
-      roles = roles.first if (roles || []).first.kind_of?(Array)
+      roles = roles.flatten.compact
       roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
       roles.map { |role| "(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' OR ')
     end
@@ -60,15 +63,20 @@ module ActsAsRoleRestricted
     roles.include?(role.try(:to_sym))
   end
 
-  def roles_match_with?(acts_as_role_restricted)
-    return false unless acts_as_role_restricted.respond_to?(:is_role_restricted)
-
-    acts_as_role_restricted.is_role_restricted? == false || (roles & acts_as_role_restricted.roles).any?
+  def roles_match_with?(obj)
+    if is_role_restricted? == false
+      true
+    elsif obj.respond_to?(:is_role_restricted?) == false
+      false
+    elsif obj.is_role_restricted? == false
+      true
+    else
+      (roles & obj.roles).any?
+    end
   end
 
   def is_role_restricted?
     roles_mask > 0
   end
-
 end
 

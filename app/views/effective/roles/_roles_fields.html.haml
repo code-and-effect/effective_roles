@@ -1,14 +1,17 @@
-- obj = f.object.class.name.downcase
+- obj = f.object.class.name.downcase.gsub("::", '_')
 
-%li{:id => "#{obj}_roles_input", :class => 'check_boxes input optional'}
-  %fieldset.choices
-    %legend.label
-      %label Roles
-    %input{:type => :hidden, :id => "#{obj}_roles_none", :name => "#{obj}[roles][]"}
-    - EffectiveRoles.roles.each_with_index do |role, x|
-      %ol.choices-group
-        %li.choice
-          %label{:for => "#{obj}_roles_#{role}"}
-            %input{:type => :checkbox, :id => "#{obj}_roles_#{role}", :name => "#{obj}[roles][]", :value => role, :checked => ("checked" if f.object.roles.include?(role))}= role
-          %p.inline-hints{:style => "margin: 0 0 16px 0;"}= role_descriptions[x]
-
+%fieldset.inputs
+  %legend
+    %span Role Restricted
+  %ol
+    %li{:id => "#{obj}_roles_input", :class => 'check_boxes input optional'}
+      %fieldset.choices
+        %legend.label
+          %label Roles
+        %input{:type => :hidden, :id => "#{obj}_roles_none", :name => "#{obj}[roles][]"}
+        %ol.choices-group
+          - EffectiveRoles.roles.each_with_index do |role, x|
+            %li.choice
+              %label{:for => "#{obj}_roles_#{role}"}
+                %input{:type => :checkbox, :id => "#{obj}_roles_#{role}", :name => "#{obj}[roles][]", :value => role.to_s, :checked => ("checked" if f.object.roles.include?(role))}= role
+              %p.inline-hints{:style => "margin: 2px 0 16px 0;"}= role_descriptions[x]
