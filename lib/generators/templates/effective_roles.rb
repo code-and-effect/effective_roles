@@ -8,16 +8,16 @@ EffectiveRoles.setup do |config|
   #
 
   # config.role_descriptions = {
-  #   User => [
+  #   'User' => [
   #     "full access to everything. Can manage users and all website content.",
   #     "full access to website content.  Cannot manage users.",
   #     "cannot access admin area.  Can see all content in members-only sections of the website."
   #   ],
-  #   Post => [
-  #     "allow superadmins to see this post",
-  #     "allow admins to see this post",
-  #     "allow members to see this post"
-  #     ]
+  #   'Effective::Page' => [
+  #     "allow superadmins to see this page",
+  #     "allow admins to see this page",
+  #     "allow members to see this page"
+  #   ]
   # }
 
   # Or just keep it simple, and use the same Array of labels for everything
