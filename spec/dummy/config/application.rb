@@ -3,7 +3,7 @@ require File.expand_path('../boot', __FILE__)
 require 'rails/all'
 
 Bundler.require(*Rails.groups)
-require "effective_slugs"
+require "effective_roles"
 
 module Dummy
   class Application < Rails::Application
