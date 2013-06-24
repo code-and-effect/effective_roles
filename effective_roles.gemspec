@@ -5,7 +5,7 @@ require "effective_roles/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name        = "Effective Roles"
+  s.name        = "effective_roles"
   s.version     = EffectiveRoles::VERSION
   s.email       = ["info@codeandeffect.com"]
   s.authors     = ["Code and Effect"]
