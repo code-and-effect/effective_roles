@@ -12,7 +12,7 @@ Intended for use with the other effective_* gems
 
 Designed to work on its own, or with simple pass through to CanCan
 
-Rails >= 3.2.x, Ruby >= 1.9.x.  Has not been tested/developed for Rails4.
+Rails 3.2.x and Rails 4
 
 
 ## Getting Started
