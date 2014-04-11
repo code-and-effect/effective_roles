@@ -9,4 +9,16 @@ module EffectiveRoles
     yield self
   end
 
+  def self.roles_collection(obj = nil)
+    descriptions = if role_descriptions.kind_of?(Hash)
+      role_descriptions[obj.try(:class).to_s] || role_descriptions.first[1]
+    else
+      role_descriptions
+    end
+
+    roles.each_with_index.map do |role, index|
+      ["#{role}<br>#{descriptions[index]}".html_safe, role]
+    end
+
+  end
 end

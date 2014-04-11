@@ -2,7 +2,10 @@ EffectiveRoles.setup do |config|
   config.roles = [:superadmin, :admin, :member] # Only add to the end of this array.  Never prepend roles.
 
   # config.role_descriptions may be an Array or a Hash
-  # These role descriptions are just text displayed by the effective_roles_fields() helper
+  # These role descriptions are just text displayed by the form helpers
+  # effective_roles_fields() formtastic helper, or
+  #  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object), :as => :check_boxes 
+  # for simple_form
 
   # Use a Hash if you want different labels depending on the resource being editted
   #

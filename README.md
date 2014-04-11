@@ -108,6 +108,22 @@ Post.for_role(current_user.roles)
 
 These are both ActiveRecord::Relations, so you can chain them with other methods like normal.
 
+## Form Helper
+
+### Formtastic
+
+```ruby
+semantic_form_for @user do |f|
+  = effective_roles_fields(f)
+```
+
+### simple_form
+
+```ruby
+simple_form_for @user do |f|
+  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object), :as => :check_boxes 
+```
+
 ## License
 
 MIT License.  Copyright Code and Effect Inc. http://www.codeandeffect.com
