@@ -50,6 +50,15 @@ module ActsAsRoleRestricted
       roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
       roles.map { |role| "(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' OR ')
     end
+
+    def without_role(*roles)
+      roles = roles.flatten.compact
+      roles = roles.first.try(:roles) if roles.length == 1 and roles.first.respond_to?(:roles)
+
+      roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
+
+      where(roles.map { |role| "NOT(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' OR '))
+    end
   end
 
   def roles=(roles)
