@@ -6,11 +6,7 @@ Includes a mixin for adding authentication for any model.
 
 SQL Finders for returning a Relation with all permitted records.
 
-Handy formtastic helper for assigning roles.
-
-Intended for use with the other effective_* gems
-
-Designed to work on its own, or with simple pass through to CanCan
+Handy formtastic and simple_form helpers for assigning roles.
 
 Rails 3.2.x and Rails 4
 
@@ -47,7 +43,7 @@ class Post
 end
 ```
 
-Then create a migration to add the :roles_Mask column to the model.
+Then create a migration to add the :roles_mask column to the model.
 
 ```console
 rails generate migration add_roles_to_post roles_mask:integer
@@ -62,6 +58,17 @@ class AddRolesToPost < ActiveRecord::Migration
   end
 end
 ```
+
+## Strong Parameters
+
+Make your controller aware of the acts_as_role_restricted passed parameters:
+
+```ruby
+def permitted_params
+  params.require(:base_object).permit(:roles => [])
+end
+```
+
 
 ## Behavior
 
@@ -93,10 +100,11 @@ post.roles
 
 ### Finder Methods
 
-Find all objects that have been assigned a specific role (or roles).  Will not return posts that have no assigned roles (roles_mask = 0)
+Find all objects that have been assigned a specific role (or roles).  Will not return posts that have no assigned roles (roles_mask = 0 or NULL)
 
 ```ruby
 Post.with_role(:admin, :superadmin)   # Can pass as an array if you want
+Post.with_role(current_user.roles)
 ```
 
 Find all objects that are appropriate for a specific role.  Will return posts that have no assigned roles
@@ -108,7 +116,38 @@ Post.for_role(current_user.roles)
 
 These are both ActiveRecord::Relations, so you can chain them with other methods like normal.
 
+## Assignable Roles
+
+Specifies which roles can be assigned to a resource by a specific user.
+
+See the initializers/effective_roles.rb for more information.
+
+```ruby
+  config.assignable_roles = {
+    :superadmin => [:superadmin, :admin, :member], # Superadmins may assign any resource any role
+    :admin => [:admin, :member],                   # Admins may only assign the :admin or :member role
+    :member => []                                  # Members may not assign any roles
+  }
+```
+
+When used in a Form Helper (see below), only the appropriate roles will be displayed.
+
+However, this restriction is not enforced on the controller level, so someone could inspect & re-write the form parameters and still assign a role that they are not allowed to.
+
+To prevent this, add something like this 1-liner to your controller update/create actions:
+
+```ruby
+before_filter :only => [:create, :update] do
+  if params[:user] && params[:user][:roles]
+    params[:user][:roles] = params[:user][:roles] & EffectiveRoles.assignable_roles_for(current_user, User.new()).map(&:to_s)
+  end
+end
+```
+
+
 ## Form Helper
+
+If you pass current_user (or any acts_as_role_restricted object) into these helpers, only the assignable_roles will be displayed.
 
 ### Formtastic
 
@@ -117,11 +156,25 @@ semantic_form_for @user do |f|
   = effective_roles_fields(f)
 ```
 
+or
+
+```ruby
+semantic_form_for @user do |f|
+  = effective_roles_fields(f, current_user)
+```
+
 ### simple_form
 
 ```ruby
 simple_form_for @user do |f|
   = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object), :as => :check_boxes 
+```
+
+or
+
+```ruby
+simple_form_for @user do |f|
+  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object, current_user), :as => :check_boxes 
 ```
 
 ## License

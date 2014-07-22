@@ -10,8 +10,8 @@
           %label Roles
         %input{:type => :hidden, :id => "#{obj}_roles_none", :name => "#{obj}[roles][]"}
         %ol.choices-group
-          - EffectiveRoles.roles.each_with_index do |role, x|
+          - roles.each do |role|
             %li.choice
               %label{:for => "#{obj}_roles_#{role}"}
                 %input{:type => :checkbox, :id => "#{obj}_roles_#{role}", :name => "#{obj}[roles][]", :value => role.to_s, :checked => ("checked" if f.object.roles.include?(role))}= role
-              %p.inline-hints{:style => "margin: 2px 0 16px 0;"}= role_descriptions[x]
+              %p.inline-hints{:style => "margin: 2px 0 16px 0;"}= descriptions[role]
