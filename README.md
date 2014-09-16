@@ -4,7 +4,7 @@ Implements multi-role authorization based on an integer roles_mask field
 
 Includes a mixin for adding authentication for any model.
 
-SQL Finders for returning a Relation with all permitted records.
+SQL Finders for returning an ActiveRecord::Relation with all permitted records.
 
 Handy formtastic and simple_form helpers for assigning roles.
 
@@ -16,7 +16,7 @@ Rails 3.2.x and Rails 4
 Add to Gemfile:
 
 ```ruby
-gem 'effective_roles'
+gem 'effective_roles', :git => 'https://github.com/code-and-effect/effective_roles'
 ```
 
 Run the bundle command to install it:
@@ -74,7 +74,7 @@ end
 
 ### Defining Roles
 
-All roles are defined in the config/effective_roles.rb initializer.
+All roles are defined in the config/effective_roles.rb initializer.  The roles are defined once and may be applied to any acts_as_role_restricted model in the application.
 
 ### Model
 
@@ -96,6 +96,44 @@ post.is?(:admin)
 
 post.roles
 => [:admin, :superadmin]
+```
+
+Compare against another acts_as_role_restricted object:
+
+```ruby
+user = User.new()
+user.roles = []
+
+post = Post.new()
+post.roles = [:admin]
+
+user.roles_match_with?(post)
+=> false  # User has no roles, but Post requires :admin
+
+post.roles_match_with?(user)
+=> true   # Post has the role of :admin, but User requires no roles
+```
+
+```ruby
+user.roles = [:admin]
+post.roles = [:superadmin]
+
+user.roles_match_with?(post)
+=> false  # User does not have the superadmin role
+
+post.roles_match_with?(user)
+=> false  # Post does not have the admin role
+```
+
+```ruby
+user.roles = [:superadmin, :admin]
+post.roles = [:admin]
+
+user.roles_match_with?(post)
+=> true  # User has :admin and so does Post
+
+post.roles_match_with?(user)
+=> true  # Post has :admin and so does User
 ```
 
 ### Finder Methods
@@ -134,7 +172,7 @@ When used in a Form Helper (see below), only the appropriate roles will be displ
 
 However, this restriction is not enforced on the controller level, so someone could inspect & re-write the form parameters and still assign a role that they are not allowed to.
 
-To prevent this, add something like this 1-liner to your controller update/create actions:
+To prevent this, add something like the following code to your controller:
 
 ```ruby
 before_filter :only => [:create, :update] do
@@ -167,15 +205,82 @@ semantic_form_for @user do |f|
 
 ```ruby
 simple_form_for @user do |f|
-  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object), :as => :check_boxes 
+  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object), :as => :check_boxes
 ```
 
 or
 
 ```ruby
 simple_form_for @user do |f|
-  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object, current_user), :as => :check_boxes 
+  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object, current_user), :as => :check_boxes
 ```
+
+## Bitmask Implementation
+
+The underlying role information for any acts_as_role_restricted ActiveRecord object is stored in that object's roles_mask field.
+
+roles_mask is an integer, in which each power of 2 represents the presence or absense of a role.
+
+If we have the following roles defined:
+
+```ruby
+EffectiveRoles.setup do |config|
+  config.roles = [:superadmin, :admin, :betauser, :member]
+end
+```
+
+Then the following will hold true:
+
+```ruby
+user = User.new()
+
+user.roles
+=> []
+
+user.roles_mask
+=> 0
+
+user.roles = [:superadmin]
+user.roles_mask
+=> 1
+
+user.roles = [:admin]
+user.roles_mask
+=> 2
+
+user.roles = [:betauser]
+user.roles_mask
+=> 4
+
+user.roles = [:member]
+user.roles_mask
+=> 8
+```
+
+As well:
+
+```ruby
+user.roles = [:superadmin, :admin]
+user.roles_mask
+=> 3
+
+user.roles = [:superadmin, :betauser]
+user.roles_mask
+=> 5
+
+user.roles = [:admin, :member]
+user.roles_mask
+=> 10
+
+user.roles = [:superadmin, :admin, :betauser, :member]
+user.roles_mask
+=> 15
+```
+
+Keep in mind, when using this gem you should never be working directly with the roles_mask field.
+
+All roles are get/set through the roles and roles= methods.
+
 
 ## License
 

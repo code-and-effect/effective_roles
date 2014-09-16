@@ -75,11 +75,7 @@ module ActsAsRoleRestricted
   end
 
   def roles_match_with?(obj)
-    if is_role_restricted? == false
-      true
-    elsif obj.respond_to?(:is_role_restricted?) == false
-      false
-    elsif obj.is_role_restricted? == false
+    if !obj.respond_to?(:is_role_restricted?) || !obj.is_role_restricted?
       true
     else
       (roles & obj.roles).any?
@@ -87,7 +83,7 @@ module ActsAsRoleRestricted
   end
 
   def is_role_restricted?
-    roles_mask > 0
+    (roles_mask || 0) > 0
   end
 end
 
