@@ -15,7 +15,7 @@ module EffectiveRoles
 
     descriptions = role_descriptions[obj.try(:class).to_s] || role_descriptions || {}
 
-    assignable_roles_for(user, obj).each do |role|
+    assignable_roles_for(user, obj).map do |role|
       ["#{role}<br>#{descriptions[role]}".html_safe, role]
     end
   end
