@@ -1,5 +1,7 @@
 # Effective Roles
 
+Assign multiple roles to any User or other ActiveRecord object. Select only the appropriate objects based on intelligent, chainable ActiveRecord::Relation finder methods.
+
 Implements multi-role authorization based on an integer roles_mask field
 
 Includes a mixin for adding authentication for any model.
@@ -16,7 +18,7 @@ Rails 3.2.x and Rails 4
 Add to Gemfile:
 
 ```ruby
-gem 'effective_roles', :git => 'https://github.com/code-and-effect/effective_roles'
+gem 'effective_roles'
 ```
 
 Run the bundle command to install it:
@@ -70,7 +72,7 @@ end
 ```
 
 
-## Behavior
+## Usage
 
 ### Defining Roles
 
@@ -292,7 +294,7 @@ You are not granted rights or licenses to the trademarks of Code and Effect
 
 This model implements the https://github.com/ryanb/cancan/wiki/Role-Based-Authorization multi role based authorization based on the roles_mask field
 
-### Testing
+## Testing
 
 The test suite for this gem is unfortunately not yet complete.
 
@@ -301,3 +303,15 @@ Run tests by:
 ```ruby
 rake spec
 ```
+
+
+## Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Bonus points for test coverage
+6. Create new Pull Request
+
+

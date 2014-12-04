@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.email       = ["info@codeandeffect.com"]
   s.authors     = ["Code and Effect"]
   s.homepage    = "https://github.com/code-and-effect/effective_roles"
-  s.summary     = "Implements multi-role authorization based on an integer roles_mask field"
-  s.description = "Implements multi-role authorization based on an integer roles_mask field. Includes a mixin for adding authentication for any model. SQL Finders for returning a Relation with all permitted records. Handy formtastic helper for assigning roles. Intended for use with the other effective_* gems Designed to work on its own, or with simple pass through to CanCan"
+  s.summary     = "Assign multiple roles to any User or other ActiveRecord object. Select only the appropriate objects based on intelligent, chainable ActiveRecord::Relation finder methods."
+  s.description = "Assign multiple roles to any User or other ActiveRecord object. Select only the appropriate objects based on intelligent, chainable ActiveRecord::Relation finder methods."
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   s.test_files = Dir["spec/**/*"]
