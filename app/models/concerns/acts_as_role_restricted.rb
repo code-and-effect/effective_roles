@@ -85,5 +85,18 @@ module ActsAsRoleRestricted
   def is_role_restricted?
     (roles_mask || 0) > 0
   end
+
+  # Does self have permission to view obj?
+  def roles_permit?(obj)
+    if obj.respond_to?(:is_role_restricted?)
+      obj.is_role_restricted? == false || (roles & obj.roles).any?
+    elsif Integer(obj) > 0
+      obj_roles = EffectiveRoles.roles_for_roles_mask(obj)
+      (roles & obj_roles).any?
+    else
+      raise 'unsupported object passed to roles_permit?(obj).  Expecting an acts_as_role_restricted object or a roles_mask integer'
+    end
+  end
+
 end
 

@@ -10,6 +10,11 @@ module EffectiveRoles
     yield self
   end
 
+  def self.roles_for_roles_mask(roles_mask)
+    roles_mask = Integer(roles_mask)
+    EffectiveRoles.roles.reject { |r| (roles_mask & 2**EffectiveRoles.roles.index(r)).zero? }
+  end
+
   def self.roles_collection(obj = nil, user = nil)
     raise ArgumentError.new('EffectiveRoles config.role_descriptions must be a Hash.  The Array syntax is deprecated.') unless EffectiveRoles.role_descriptions.kind_of?(Hash)
 
