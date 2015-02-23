@@ -4,6 +4,7 @@ require "effective_roles/version"
 module EffectiveRoles
   mattr_accessor :roles
   mattr_accessor :assignable_roles
+  mattr_accessor :unassignable_roles
   mattr_accessor :role_descriptions
 
   def self.setup
@@ -21,7 +22,7 @@ module EffectiveRoles
     descriptions = role_descriptions[obj.try(:class).to_s] || role_descriptions || {}
 
     assignable_roles_for(user, obj).map do |role|
-      ["#{role}<br>#{descriptions[role]}".html_safe, role]
+      ["#{role}<p class='help-block'>#{descriptions[role]}</p>".html_safe, role]
     end
   end
 
