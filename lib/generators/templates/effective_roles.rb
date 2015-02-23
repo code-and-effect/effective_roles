@@ -56,15 +56,15 @@ EffectiveRoles.setup do |config|
     :member => []                                  # Members may not assign any roles
   }
 
-  # config.unassignable_roles
-  # Which roles should be prevented from being assigned at all
+  # config.disabled_roles
+  # Which roles should be displayed as disabled
   # =========================
   # Sometimes you don't want a role to be assignable (see README.md)
   # So that you can overload it yourself and assingn the role programatically
   #
   # Use this Hash syntax if you want different permissions depending on the resource being editted
   #
-  # config.assignable_roles = {
+  # config.disabled_roles = {
   #   'User' => [:member]               # When editing a User object, will be unable to assign the member role
   #   'Page' => [:superadmin, :admin]   # When editing a Page object, will be unable to assign superadmin, admin role
   # }
@@ -72,8 +72,9 @@ EffectiveRoles.setup do |config|
   # Or just keep it simple, and use this Array syntax of permissions for every resource
   #
   # config.unassignable_roles = [:member]
-
-
+  config.disabled_roles = {
+    'User' => [:member]
+  }
 
 
 end

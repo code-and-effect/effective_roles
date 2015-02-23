@@ -36,4 +36,11 @@ ActiveRecord::Schema.define(:version => 1) do
     t.datetime "created_at"
   end
 
+  create_table "posts", force: true do |t|
+    t.string   "title"
+    t.integer  "roles_mask",             default: 0
+    t.datetime "updated_at"
+    t.datetime "created_at"
+  end
+
 end
