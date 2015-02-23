@@ -13,7 +13,7 @@ module EffectiveRoles
 
   def self.roles_for_roles_mask(roles_mask)
     roles_mask = Integer(roles_mask)
-    EffectiveRoles.roles.reject { |r| (roles_mask & 2**EffectiveRoles.roles.index(r)).zero? }
+    roles.reject { |r| (roles_mask & 2**roles.index(r)).zero? }
   end
 
   def self.roles_collection(obj = nil, user = nil)
@@ -36,6 +36,10 @@ module EffectiveRoles
     else
       roles
     end
+  end
+
+  def foo
+    'bar'
   end
 
 
