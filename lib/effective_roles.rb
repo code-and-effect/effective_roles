@@ -38,9 +38,4 @@ module EffectiveRoles
     end
   end
 
-  def foo
-    'bar'
-  end
-
-
 end

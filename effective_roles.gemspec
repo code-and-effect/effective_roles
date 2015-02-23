@@ -23,4 +23,13 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rspec-rails"
   s.add_development_dependency "shoulda-matchers"
   s.add_development_dependency "sqlite3"
+
+  s.add_development_dependency "guard"
+  s.add_development_dependency "guard-rspec"
+  s.add_development_dependency "guard-livereload"
+
+  s.add_development_dependency "pry"
+  s.add_development_dependency "pry-stack_explorer"
+  s.add_development_dependency "pry-byebug"
+
 end
