@@ -119,6 +119,7 @@ user.roles = [:admin]
 
 post.roles_permit?(user)
 => false  # User does not have the superadmin role
+```
 
 ```ruby
 post.roles = [:admin]
