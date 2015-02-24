@@ -16,16 +16,16 @@ describe EffectiveRoles do
 
   describe '#roles_for_roles_mask' do
     it 'computes the appropriate roles for the given mask' do
-      EffectiveRoles.roles_for_roles_mask(nil).should eq []
-      EffectiveRoles.roles_for_roles_mask(0).should eq []
-      EffectiveRoles.roles_for_roles_mask(1).should eq [:superadmin]
-      EffectiveRoles.roles_for_roles_mask(2).should eq [:admin]
-      EffectiveRoles.roles_for_roles_mask(3).should eq [:superadmin, :admin]
-      EffectiveRoles.roles_for_roles_mask(4).should eq [:member]
-      EffectiveRoles.roles_for_roles_mask(5).should eq [:superadmin, :member]
-      EffectiveRoles.roles_for_roles_mask(6).should eq [:admin, :member]
-      EffectiveRoles.roles_for_roles_mask(7).should eq [:superadmin, :admin, :member]
-      EffectiveRoles.roles_for_roles_mask(8).should eq []
+      EffectiveRoles.roles_for(nil).should eq []
+      EffectiveRoles.roles_for(0).should eq []
+      EffectiveRoles.roles_for(1).should eq [:superadmin]
+      EffectiveRoles.roles_for(2).should eq [:admin]
+      EffectiveRoles.roles_for(3).should eq [:superadmin, :admin]
+      EffectiveRoles.roles_for(4).should eq [:member]
+      EffectiveRoles.roles_for(5).should eq [:superadmin, :member]
+      EffectiveRoles.roles_for(6).should eq [:admin, :member]
+      EffectiveRoles.roles_for(7).should eq [:superadmin, :admin, :member]
+      EffectiveRoles.roles_for(8).should eq []
     end
   end
 
