@@ -103,39 +103,29 @@ post.roles
 Compare against another acts_as_role_restricted object:
 
 ```ruby
-user = User.new()
-user.roles = []
-
 post = Post.new()
 post.roles = [:admin]
 
-user.roles_match_with?(post)
-=> false  # User has no roles, but Post requires :admin
+user = User.new()
+user.roles = []
 
-post.roles_match_with?(user)
-=> true   # Post has the role of :admin, but User requires no roles
+post.roles_permit?(user)
+=> false  # Post requires the :admin role, but User has no admin role
 ```
 
 ```ruby
-user.roles = [:admin]
 post.roles = [:superadmin]
+user.roles = [:admin]
 
-user.roles_match_with?(post)
+post.roles_permit?(user)
 => false  # User does not have the superadmin role
 
-post.roles_match_with?(user)
-=> false  # Post does not have the admin role
-```
-
 ```ruby
-user.roles = [:superadmin, :admin]
 post.roles = [:admin]
+user.roles = [:superadmin, :admin]
 
-user.roles_match_with?(post)
-=> true  # User has :admin and so does Post
-
-post.roles_match_with?(user)
-=> true  # Post has :admin and so does User
+post.roles_permit?(user)
+=> true  # User has required :admin role
 ```
 
 ### Finder Methods
