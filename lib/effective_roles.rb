@@ -12,9 +12,16 @@ module EffectiveRoles
     yield self
   end
 
-  def self.roles_for_roles_mask(roles_mask)
-    roles_mask = Integer(roles_mask || 0)
-    roles.reject { |r| (roles_mask & 2**roles.index(r)).zero? }
+  def self.roles_for(obj)
+    if obj.respond_to?(:is_role_restricted?)
+     obj.roles
+    elsif obj.kind_of?(Integer)
+      roles.reject { |r| (obj & 2**roles.index(r)).zero? }
+    elsif obj.nil?
+      []
+    else
+      raise 'unsupported object passed to EffectiveRoles.roles_for method.  Expecting an acts_as_role_restricted object or a roles_mask integer'
+    end
   end
 
   def self.roles_collection(obj = nil, user = nil)

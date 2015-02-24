@@ -74,19 +74,27 @@ module ActsAsRoleRestricted
     roles.include?(role.try(:to_sym))
   end
 
-  # Does self have permission to view obj?
-  def roles_match_with?(obj)
-    if obj.respond_to?(:is_role_restricted?)
-      obj.is_role_restricted? == false || (roles & obj.roles).any?
-    elsif Integer(obj) > 0
-      (roles & EffectiveRoles.roles_for_roles_mask(obj)).any?
-    else
-      raise 'unsupported object passed to roles_permit?(obj).  Expecting an acts_as_role_restricted object or a roles_mask integer'
-    end
+  # Are both objects unrestricted, or do any roles overlap?
+  def roles_overlap?(obj)
+    obj_roles = EffectiveRoles.roles_for(obj)
+    (roles.blank? && obj_roles.blank?) || (roles & obj_roles).any?
+  end
+
+  # Are both objects unrestricted, or are both roles identical?
+  def roles_match?(obj)
+    obj_roles = EffectiveRoles.roles_for(obj)
+    matching_roles = (roles & obj_roles)
+    matching_roles.length == roles.length && matching_roles.length == obj_roles.length
+  end
+
+  # Any I unrestricted, or do any roles overlap?
+  def roles_permit?(obj)
+    roles.blank? || roles_overlap?(obj)
   end
 
   def is_role_restricted?
-    (roles_mask || 0) > 0
+    roles.present?
   end
+
 end
 
