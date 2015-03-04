@@ -17,6 +17,8 @@ module EffectiveRoles
      obj.roles
     elsif obj.kind_of?(Integer)
       roles.reject { |r| (obj & 2**roles.index(r)).zero? }
+    elsif obj.kind_of?(Symbol)
+      [roles.find { |role| role == obj }].compact
     elsif obj.nil?
       []
     else
@@ -34,8 +36,6 @@ module EffectiveRoles
     end
   end
 
-  private
-
   def self.assignable_roles_for(user, obj = nil)
     raise 'EffectiveRoles config.assignable_roles_for must be a Hash, Array or nil' unless [Hash, Array, NilClass].include?(assignable_roles.class)
 
@@ -47,6 +47,8 @@ module EffectiveRoles
 
     user.roles.map { |role| assignable[role] }.flatten.compact.uniq
   end
+
+  private
 
   def self.role_description(role, obj = nil)
     raise 'EffectiveRoles config.role_descriptions must be a Hash' unless role_descriptions.kind_of?(Hash)
