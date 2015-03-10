@@ -74,6 +74,12 @@ module ActsAsRoleRestricted
     roles.include?(role.try(:to_sym))
   end
 
+  # if user.is_any?(:admin, :editor)
+  # returns true if user has any role given
+  def is_any?(*queried_roles)
+    (queried_roles & roles).present?
+  end
+
   # Are both objects unrestricted, or do any roles overlap?
   def roles_overlap?(obj)
     obj_roles = EffectiveRoles.roles_for(obj)

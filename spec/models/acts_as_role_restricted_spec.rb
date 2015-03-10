@@ -11,6 +11,32 @@ describe 'Acts As Role Restricted' do
     EffectiveRoles.setup { |config| config.roles = roles }
   end
 
+  describe '#is_any?(roles)' do
+    context 'when subject has one of the roles in question' do
+      let(:post) { Post.new.tap { |post| post.roles = [:member] } }
+
+      it 'is true' do
+        post.is_any?(:admin, :member).should be(true)
+      end
+    end
+
+    context 'when subject does not have any of the roles in question' do
+      let(:post) { Post.new.tap { |post| post.roles = [:member] } }
+
+      it 'is false' do
+        post.is_any?(:admin, :superadmin).should be(false)
+      end
+    end
+
+    context 'when subject does not have any roles' do
+      let(:post) { Post.new }
+
+      it 'is false' do
+        post.is_any?(:member, :admin, :superadmin).should be(false)
+      end
+    end
+  end
+
   describe '#roles_permit?(obj)' do
     describe 'when subject has no roles' do
       let(:post) { Post.new }

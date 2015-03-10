@@ -96,6 +96,9 @@ post.is_role_restricted?
 post.is?(:admin)
 => true
 
+post.is_any?(:editor, :superadmin)
+=> true
+
 post.roles
 => [:admin, :superadmin]
 ```
