@@ -50,11 +50,11 @@ EffectiveRoles.setup do |config|
   #
   # Or just keep it simple, and use this Hash syntax of permissions for every resource
   #
-  config.assignable_roles = {
-    :superadmin => [:superadmin, :admin, :member], # Superadmins may assign any resource any role
-    :admin => [:admin, :member],                   # Admins may only assign the :admin or :member role
-    :member => []                                  # Members may not assign any roles
-  }
+  # config.assignable_roles = {
+  #   :superadmin => [:superadmin, :admin, :member], # Superadmins may assign any resource any role
+  #   :admin => [:admin, :member],                   # Admins may only assign the :admin or :member role
+  #   :member => []                                  # Members may not assign any roles
+  # }
 
   # config.disabled_roles
   # Which roles should be displayed as disabled
