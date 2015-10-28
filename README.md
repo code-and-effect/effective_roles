@@ -225,7 +225,7 @@ effective_roles_summary_table(additionally: [Reports::PostReport]) # Add a non A
 effective_roles_summary_table(plus: {post_report: :export}) # A custom permission based on a symbol
 ```
 
-You can override the `effective_roles_authorization_label(klass)` method for better control of the label display
+You can override the `effective_roles_authorization_label(klass)` method for better control of the label display.
 
 ## Bitmask Implementation
 
