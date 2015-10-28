@@ -77,4 +77,13 @@ EffectiveRoles.setup do |config|
   }
 
 
+  # config.authorization_method_for_summary_table
+  # This has absolutely no affect on the any logic involving roles
+  # It's purely for the effective_roles_summary_table() helper method
+  #
+  # It should match the authorization check used by your application
+  #
+  # Use CanCan: can?(action, resource)
+  config.authorization_method_for_summary_table = Proc.new { |controller, action, resource| true }
+
 end

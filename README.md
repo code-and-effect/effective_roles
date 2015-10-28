@@ -211,6 +211,22 @@ simple_form_for @user do |f|
   = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object, current_user), :as => :check_boxes
 ```
 
+## Summary table
+
+Use the `effective_roles_summary_table` view helper to output a table of the actual permission levels for each role and ActiveRecord object combination.
+
+You can customize the helper function with the following keys: roles, only, except, plus and additionally
+
+```ruby
+effective_roles_summary_table(roles: [:admin, :superadmin], only: [Post, Event])
+effective_roles_summary_table(except: [Post, User])
+effective_roles_summary_table(plus: [Reports::PostReport]) # Add a non ActiveRecord object to the output, sorted with the other model names
+effective_roles_summary_table(additionally: [Reports::PostReport]) # Add a non ActiveRecord object to the output, after the other models
+effective_roles_summary_table(plus: {post_report: :export}) # A custom permission based on a symbol
+```
+
+You can override the `effective_roles_authorization_label(klass)` method for better control of the label display
+
 ## Bitmask Implementation
 
 The underlying role information for any acts_as_role_restricted ActiveRecord object is stored in that object's roles_mask field.

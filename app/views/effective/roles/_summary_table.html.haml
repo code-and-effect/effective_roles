@@ -1,0 +1,12 @@
+%table.table
+  %thead
+    %th
+    - roles.each do |role|
+      %th.text-center= role
+  %tbody
+    - klasses.each do |klass|
+      %tr
+        %td= effective_roles_authorization_label(klass)
+        - roles.each do |role|
+          %td.text-center
+            = effective_roles_authorization_badge(EffectiveRoles.authorization_level(controller, role, klass))

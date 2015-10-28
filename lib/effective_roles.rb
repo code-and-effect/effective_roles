@@ -8,6 +8,8 @@ module EffectiveRoles
   mattr_accessor :assignable_roles
   mattr_accessor :disabled_roles
 
+  mattr_accessor :authorization_method_for_summary_table
+
   def self.setup
     yield self
   end
@@ -46,6 +48,63 @@ module EffectiveRoles
     assignable = assignable_roles[obj.try(:class).to_s] || assignable_roles || {}
 
     user.roles.map { |role| assignable[role] }.flatten.compact.uniq
+  end
+
+  # This is used by the effective_roles_summary_table helper method
+  def self.authorization_level(controller, role, resource)
+    auth_method = authorization_method_for_summary_table
+
+    return :unknown unless (auth_method.respond_to?(:call) || auth_method.kind_of?(Symbol))
+    return :unknown unless (controller.current_user rescue nil).respond_to?(:roles=)
+
+    controller.instance_variable_set(:@current_ability, nil)
+    controller.current_user.roles = [role]
+    resource = (resource.new() rescue resource)
+
+    # Custom actions
+    if resource.kind_of?(Hash)
+      resource.each do |key, value|
+        return value if (controller.instance_exec(controller, value, key, &auth_method) rescue false)
+      end
+    end
+
+    # Check for Manage
+    return :manage if (
+      (controller.instance_exec(controller, :create, resource, &auth_method) rescue false) &&
+      (controller.instance_exec(controller, :update, resource, &auth_method) rescue false) &&
+      (controller.instance_exec(controller, :show, resource, &auth_method) rescue false) &&
+      (controller.instance_exec(controller, :destroy, resource, &auth_method) rescue false)
+    )
+
+    # Check for Update
+    return :update if (controller.instance_exec(controller, :update, resource, &auth_method) rescue false)
+
+    # Check for Update Own
+    if resource.respond_to?('user=')
+      resource.user = controller.current_user
+      return :update_own if (controller.instance_exec(controller, :update, resource, &auth_method) rescue false)
+      resource.user = nil
+    elsif resource.respond_to?('user_id=')
+      resource.user_id = controller.current_user.id
+      return :update_own if (controller.instance_exec(controller, :update, resource, &auth_method) rescue false)
+      resource.user_id = nil
+    elsif resource.kind_of?(User)
+      return :update_own if (controller.instance_exec(controller, :update, controller.current_user, &auth_method) rescue false)
+    end
+
+    # Check for Create
+    return :create if (controller.instance_exec(controller, :create, resource, &auth_method) rescue false)
+
+    # Check for Show
+    return :show if (controller.instance_exec(controller, :show, resource, &auth_method) rescue false)
+
+    # Check for Index
+    return :index if (controller.instance_exec(controller, :index, resource, &auth_method) rescue false)
+
+    # Check for Destroy
+    return :destroy if (controller.instance_exec(controller, :destroy, resource, &auth_method) rescue false)
+
+    :none
   end
 
   private
