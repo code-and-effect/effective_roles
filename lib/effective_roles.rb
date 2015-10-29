@@ -52,13 +52,48 @@ module EffectiveRoles
 
   # This is used by the effective_roles_summary_table helper method
   def self.authorization_level(controller, role, resource)
-    auth_method = authorization_method_for_summary_table
-
-    return :unknown unless (auth_method.respond_to?(:call) || auth_method.kind_of?(Symbol))
+    return :unknown unless (authorization_method_for_summary_table.respond_to?(:call) || authorization_method_for_summary_table.kind_of?(Symbol))
     return :unknown unless (controller.current_user rescue nil).respond_to?(:roles=)
 
+    # Store the current ability (cancan support) and roles
+    current_ability = controller.instance_variable_get(:@current_ability)
+    current_user_roles = controller.current_user.roles
+
+    # Set up the user, so the check is done with the desired permission level
     controller.instance_variable_set(:@current_ability, nil)
     controller.current_user.roles = [role]
+
+    # Find the actual authorization level
+    level = _authorization_level(controller, role, resource, authorization_method_for_summary_table)
+
+    # Restore the existing current_user stuff
+    controller.instance_variable_set(:@current_ability, current_ability)
+    controller.current_user.roles = current_user_roles
+
+    level
+  end
+
+  private
+
+  def self.role_description(role, obj = nil)
+    raise 'EffectiveRoles config.role_descriptions must be a Hash' unless role_descriptions.kind_of?(Hash)
+    (role_descriptions[obj.try(:class).to_s] || {})[role] || role_descriptions[role] || ''
+  end
+
+  def self.disabled_roles_for(obj)
+    raise 'EffectiveRoles config.disabled_roles must be a Hash, Array or nil' unless [Hash, Array, NilClass].include?(disabled_roles.class)
+
+    case disabled_roles
+    when Array
+      disabled_roles
+    when Hash
+      Array(disabled_roles[obj.try(:class).to_s])
+    else
+      []
+    end
+  end
+
+  def self._authorization_level(controller, role, resource, auth_method)
     resource = (resource.new() rescue resource)
 
     # Custom actions
@@ -105,26 +140,6 @@ module EffectiveRoles
     return :destroy if (controller.instance_exec(controller, :destroy, resource, &auth_method) rescue false)
 
     :none
-  end
-
-  private
-
-  def self.role_description(role, obj = nil)
-    raise 'EffectiveRoles config.role_descriptions must be a Hash' unless role_descriptions.kind_of?(Hash)
-    (role_descriptions[obj.try(:class).to_s] || {})[role] || role_descriptions[role] || ''
-  end
-
-  def self.disabled_roles_for(obj)
-    raise 'EffectiveRoles config.disabled_roles must be a Hash, Array or nil' unless [Hash, Array, NilClass].include?(disabled_roles.class)
-
-    case disabled_roles
-    when Array
-      disabled_roles
-    when Hash
-      Array(disabled_roles[obj.try(:class).to_s])
-    else
-      []
-    end
   end
 
 end

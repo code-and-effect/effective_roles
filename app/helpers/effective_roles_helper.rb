@@ -16,7 +16,10 @@ module EffectiveRolesHelper
   # effective_roles_summary_table(roles: [:admin, :superadmin], only: [Post, Event])
   # effective_roles_summary_table(except: [Post, User])
   # effective_roles_summary_table(aditionally: [Report::PostReport, User])
+  # effective_roles_summary_table({clinic_report: :export})
   def effective_roles_summary_table(opts = {})
+    raise 'Expected argument to be a Hash' unless opts.kind_of?(Hash)
+
     roles = Array(opts[:roles]).presence || EffectiveRoles.roles
 
     if opts[:only].present?
@@ -26,6 +29,7 @@ module EffectiveRolesHelper
     end
 
     # Figure out all klasses (ActiveRecord objects)
+    Rails.application.eager_load!
     tables = ActiveRecord::Base.connection.tables - ['schema_migrations', 'delayed_jobs']
 
     klasses = ActiveRecord::Base.descendants.map do |model|
