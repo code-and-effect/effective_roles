@@ -1,5 +1,4 @@
-require "effective_roles/engine"
-require "effective_roles/version"
+require 'effective_roles/engine'
 
 module EffectiveRoles
   mattr_accessor :roles
