@@ -94,7 +94,7 @@ module EffectiveRoles
   end
 
   def self._authorization_level(controller, role, resource, auth_method)
-    resource = (resource.new() rescue resource)
+    resource = (resource.new() rescue resource) if resource.kind_of?(ActiveRecord::Base)
 
     # Custom actions
     if resource.kind_of?(Hash)
