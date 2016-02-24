@@ -19,7 +19,8 @@ module EffectiveRolesHelper
   def effective_roles_summary_table(opts = {})
     raise 'Expected argument to be a Hash' unless opts.kind_of?(Hash)
 
-    roles = Array(opts[:roles]).presence || EffectiveRoles.roles
+    roles = Array(opts[:roles]).presence
+    roles ||= EffectiveRoles.roles + [:signed_in, :signed_out]
 
     if opts[:only].present?
       klasses = Array(opts[:only])
@@ -82,6 +83,10 @@ module EffectiveRolesHelper
       content_tag(:span, 'Delete only', class: 'label label-warning')
     when :none
       content_tag(:span, 'No Access', class: 'label label-danger')
+    when :yes
+      content_tag(:span, 'Yes', class: 'label label-success')
+    when :no
+      content_tag(:span, 'No', class: 'label label-danger')
     when :unknown
       content_tag(:span, 'Unknown', class: 'label')
     else
@@ -90,8 +95,10 @@ module EffectiveRolesHelper
   end
 
   def effective_roles_authorization_label(klass)
-    klass = klass.keys.first if klass.kind_of?(Hash)
+    # Custom permissions
+    return "#{klass.keys.first} #{klass.values.first}" if klass.kind_of?(Hash) && klass.length == 1
 
+    klass = klass.keys.first if klass.kind_of?(Hash)
     label = (klass.respond_to?(:name) ? klass.name : klass.to_s)
 
     ['Effective::Datatables::', 'Effective::'].each do |replace|

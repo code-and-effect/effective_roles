@@ -5,6 +5,8 @@ module EffectiveRoles
   mattr_accessor :roles
   mattr_accessor :role_descriptions
 
+  mattr_accessor :layout
+
   mattr_accessor :assignable_roles
   mattr_accessor :disabled_roles
 
@@ -14,6 +16,8 @@ module EffectiveRoles
     yield self
   end
 
+  # This method converts whatever is given into its roles
+  # Pass an object, Integer, or Symbol to find corresponding role
   def self.roles_for(obj)
     if obj.respond_to?(:is_role_restricted?)
      obj.roles
@@ -57,17 +61,41 @@ module EffectiveRoles
 
     # Store the current ability (cancan support) and roles
     current_ability = controller.instance_variable_get(:@current_ability)
+    current_user = controller.instance_variable_get(:@current_user)
     current_user_roles = controller.current_user.roles
 
     # Set up the user, so the check is done with the desired permission level
     controller.instance_variable_set(:@current_ability, nil)
-    controller.current_user.roles = [role]
+
+    case role
+    when :signed_in
+      controller.current_user.roles = []
+    when :signed_out
+      controller.instance_variable_set(:@current_user, nil)
+
+      if defined?(EffectiveLogging) && EffectiveLogging.respond_to?(:supressed?)
+        EffectiveLogging.supressed { (controller.request.env['warden'].set_user(false) rescue nil) }
+      else
+        (controller.request.env['warden'].set_user(false) rescue nil)
+      end
+    else
+      controller.current_user.roles = [role]
+    end
 
     # Find the actual authorization level
     level = _authorization_level(controller, role, resource, authorization_method_for_summary_table)
 
     # Restore the existing current_user stuff
+    if role == :signed_out
+      if defined?(EffectiveLogging) && EffectiveLogging.respond_to?(:supressed?)
+        EffectiveLogging.supressed { (controller.request.env['warden'].set_user(current_user) rescue nil) }
+      else
+        (controller.request.env['warden'].set_user(current_user) rescue nil)
+      end
+    end
+
     controller.instance_variable_set(:@current_ability, current_ability)
+    controller.instance_variable_set(:@current_user, current_user)
     controller.current_user.roles = current_user_roles
 
     level
@@ -99,7 +127,7 @@ module EffectiveRoles
     # Custom actions
     if resource.kind_of?(Hash)
       resource.each do |key, value|
-        return value if (controller.instance_exec(controller, value, key, &auth_method) rescue false)
+        return (controller.instance_exec(controller, key, value, &auth_method) rescue false) ? :yes : :no
       end
     end
 

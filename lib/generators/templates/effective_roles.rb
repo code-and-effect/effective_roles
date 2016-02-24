@@ -71,10 +71,13 @@ EffectiveRoles.setup do |config|
   #
   # Or just keep it simple, and use this Array syntax of permissions for every resource
   #
-  # config.unassignable_roles = [:member]
-  config.disabled_roles = {
-    'User' => [:member]
-  }
+  # config.disabled_roles = [:member]
+  #
+  # or
+  #
+  # config.disabled_roles = {
+  #   'User' => [:member]
+  # }
 
 
   # config.authorization_method_for_summary_table
@@ -85,5 +88,9 @@ EffectiveRoles.setup do |config|
   #
   # Use CanCan: can?(action, resource)
   config.authorization_method_for_summary_table = Proc.new { |controller, action, resource| true }
+
+  # Layout Settings
+  # Configure the Layout per controller, or all at once
+  config.layout = 'application'
 
 end
