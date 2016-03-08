@@ -32,6 +32,11 @@ module EffectiveRoles
     end
   end
 
+  # EffectiveRoles.roles_mask_for(:admin, :member)
+  def self.roles_mask_for(*roles)
+    (Array(roles).map(&:to_sym) & EffectiveRoles.roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
+  end
+
   def self.roles_collection(obj = nil, user = nil)
     assignable_roles_for(user, obj).map do |role|
       [
