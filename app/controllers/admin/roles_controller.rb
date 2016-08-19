@@ -1,6 +1,6 @@
 module Admin
   class RolesController < ApplicationController
-    before_filter :authenticate_user!   # This is devise, ensure we're logged in.
+    respond_to?(:before_action) ? before_action(:authenticate_user!) : before_filter(:authenticate_user!) # Devise
 
     layout (EffectiveRoles.layout.kind_of?(Hash) ? EffectiveRoles.layout[:admin_roles] : EffectiveRoles.layout)
 
