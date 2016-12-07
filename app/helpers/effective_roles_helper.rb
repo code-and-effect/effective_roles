@@ -20,7 +20,7 @@ module EffectiveRolesHelper
     raise 'Expected argument to be a Hash' unless opts.kind_of?(Hash)
 
     roles = Array(opts[:roles]).presence
-    roles ||= EffectiveRoles.roles + [:signed_in, :signed_out]
+    roles ||= [:public, :signed_in] + EffectiveRoles.roles
 
     if opts[:only].present?
       klasses = Array(opts[:only])
@@ -68,7 +68,7 @@ module EffectiveRolesHelper
   def effective_roles_authorization_badge(level)
     case level
     when :manage
-      content_tag(:span, 'Full', class: 'label label-success')
+      content_tag(:span, 'Full', class: 'label label-primary')
     when :update
       content_tag(:span, 'Edit', class: 'label label-success')
     when :update_own
@@ -84,13 +84,13 @@ module EffectiveRolesHelper
     when :none
       content_tag(:span, 'No Access', class: 'label label-danger')
     when :yes
-      content_tag(:span, 'Yes', class: 'label label-success')
+      content_tag(:span, 'Yes', class: 'label label-primary')
     when :no
       content_tag(:span, 'No', class: 'label label-danger')
     when :unknown
       content_tag(:span, 'Unknown', class: 'label')
     else
-      content_tag(:span, level.to_s.titleize, class: 'label label-success')
+      content_tag(:span, level.to_s.titleize, class: 'label label-info')
     end
   end
 
@@ -101,7 +101,7 @@ module EffectiveRolesHelper
     klass = klass.keys.first if klass.kind_of?(Hash)
     label = (klass.respond_to?(:name) ? klass.name : klass.to_s)
 
-    ['Effective::Datatables::', 'Effective::'].each do |replace|
+    ['Effective::Datatables::'].each do |replace|
       label = label.sub(replace, '')
     end
 

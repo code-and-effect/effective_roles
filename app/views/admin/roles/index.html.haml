@@ -1,3 +1,8 @@
-%h2= @page_title
+%h1.effective-heading= @page_title
+
+- if defined?(CanCanCan)
+  %p The following roles are computed based on the ability.rb file.
+- else
+  %p The following roles are computed based on the configured authorization_method.
 
 = effective_roles_summary_table

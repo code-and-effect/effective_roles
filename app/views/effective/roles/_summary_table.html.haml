@@ -2,7 +2,11 @@
   %thead
     %th
     - roles.each do |role|
-      %th.text-center= role
+      %th.text-center
+        - if [:public, :signed_in].include?(role)
+          = role.to_s.titleize
+        - else
+          = ":#{role}"
   %tbody
     - klasses.each do |klass|
       %tr

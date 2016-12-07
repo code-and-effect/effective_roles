@@ -7,7 +7,7 @@ module Admin
     def index
       @page_title = 'Roles'
 
-      EffectiveOrders.authorized?(self, :admin, :effective_roles)
+      EffectiveRoles.authorized?(self, :admin, :effective_roles)
     end
   end
 end

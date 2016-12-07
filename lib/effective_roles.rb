@@ -10,10 +10,17 @@ module EffectiveRoles
   mattr_accessor :assignable_roles
   mattr_accessor :disabled_roles
 
-  mattr_accessor :authorization_method_for_summary_table
+  mattr_accessor :authorization_method
 
   def self.setup
     yield self
+  end
+
+  def self.authorized?(controller, action, resource)
+    if authorization_method.respond_to?(:call) || authorization_method.kind_of?(Symbol)
+      raise Effective::AccessDenied.new() unless (controller || self).instance_exec(controller, action, resource, &authorization_method)
+    end
+    true
   end
 
   # This method converts whatever is given into its roles
@@ -61,7 +68,7 @@ module EffectiveRoles
 
   # This is used by the effective_roles_summary_table helper method
   def self.authorization_level(controller, role, resource)
-    return :unknown unless (authorization_method_for_summary_table.respond_to?(:call) || authorization_method_for_summary_table.kind_of?(Symbol))
+    return :unknown unless (authorization_method.respond_to?(:call) || authorization_method.kind_of?(Symbol))
     return :unknown unless (controller.current_user rescue nil).respond_to?(:roles=)
 
     # Store the current ability (cancan support) and roles
@@ -72,10 +79,12 @@ module EffectiveRoles
     # Set up the user, so the check is done with the desired permission level
     controller.instance_variable_set(:@current_ability, nil)
 
+    level = nil
+
     case role
     when :signed_in
       controller.current_user.roles = []
-    when :signed_out
+    when :public
       controller.instance_variable_set(:@current_user, nil)
 
       if defined?(EffectiveLogging) && EffectiveLogging.respond_to?(:supressed?)
@@ -88,14 +97,18 @@ module EffectiveRoles
     end
 
     # Find the actual authorization level
-    level = _authorization_level(controller, role, resource, authorization_method_for_summary_table)
+    level = _authorization_level(controller, role, resource, authorization_method)
 
     # Restore the existing current_user stuff
-    if role == :signed_out
-      if defined?(EffectiveLogging) && EffectiveLogging.respond_to?(:supressed?)
-        EffectiveLogging.supressed { (controller.request.env['warden'].set_user(current_user) rescue nil) }
-      else
-        (controller.request.env['warden'].set_user(current_user) rescue nil)
+    if role == :public
+      ActiveRecord::Base.transaction do
+        if defined?(EffectiveLogging) && EffectiveLogging.respond_to?(:supressed?)
+          EffectiveLogging.supressed { (controller.request.env['warden'].set_user(current_user) rescue nil) }
+        else
+          (controller.request.env['warden'].set_user(current_user) rescue nil)
+        end
+
+        raise ActiveRecord::Rollback
       end
     end
 
