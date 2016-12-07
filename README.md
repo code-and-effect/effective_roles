@@ -298,9 +298,6 @@ All roles are get/set through the roles and roles= methods.
 
 MIT License.  Copyright [Code and Effect Inc.](http://www.codeandeffect.com/)
 
-Code and Effect is the product arm of [AgileStyle](http://www.agilestyle.com/), an Edmonton-based shop that specializes in building custom web applications with Ruby on Rails.
-
-
 ## Credits
 
 This model implements the https://github.com/ryanb/cancan/wiki/Role-Based-Authorization multi role based authorization based on the roles_mask field
