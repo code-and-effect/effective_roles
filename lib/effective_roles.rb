@@ -41,7 +41,7 @@ module EffectiveRoles
 
   # EffectiveRoles.roles_mask_for(:admin, :member)
   def self.roles_mask_for(*roles)
-    (Array(roles).map(&:to_sym) & EffectiveRoles.roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
+    (Array(roles).flatten.map(&:to_sym) & EffectiveRoles.roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
   end
 
   def self.roles_collection(obj = nil, user = nil)
