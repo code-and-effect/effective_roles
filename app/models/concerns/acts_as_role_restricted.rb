@@ -62,7 +62,7 @@ module ActsAsRoleRestricted
   end
 
   def roles=(roles)
-    self.roles_mask = (roles.map(&:to_sym) & EffectiveRoles.roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
+    self.roles_mask = (Array(roles).flatten.map(&:to_sym) & EffectiveRoles.roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
   end
 
   def roles

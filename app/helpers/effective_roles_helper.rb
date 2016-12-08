@@ -8,7 +8,16 @@ module EffectiveRolesHelper
 
     opts = {:f => form, :roles => roles, :descriptions => descriptions}.merge(options)
 
-    render :partial => 'effective/roles/roles_fields', :locals => opts
+    render :partial => 'effective/roles/fields', :locals => opts
+  end
+
+  def effective_roles_summary(obj, options = {}) # User or a Post, any acts_as_roleable
+    raise 'expected an acts_as_roleable object' unless obj.respond_to?(:roles)
+
+    descriptions = EffectiveRoles.role_descriptions[obj.class.name] || EffectiveRoles.role_descriptions || {}
+    opts = {:obj => obj, :roles => obj.roles, :descriptions => descriptions}.merge(options)
+
+    render :partial => 'effective/roles/summary', :locals => opts
   end
 
   # Output a table of permissions for each role based on current permissions

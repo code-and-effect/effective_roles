@@ -107,25 +107,25 @@ Compare against another acts_as_role_restricted object:
 
 ```ruby
 post = Post.new()
-post.roles = [:admin]
+post.roles = :admin
 
 user = User.new()
-user.roles = []
+user.roles = nil
 
 post.roles_permit?(user)
 => false  # Post requires the :admin role, but User has no admin role
 ```
 
 ```ruby
-post.roles = [:superadmin]
-user.roles = [:admin]
+post.roles = :superadmin
+user.roles = :admin
 
 post.roles_permit?(user)
 => false  # User does not have the superadmin role
 ```
 
 ```ruby
-post.roles = [:admin]
+post.roles = :admin
 user.roles = [:superadmin, :admin]
 
 post.roles_permit?(user)
@@ -210,6 +210,32 @@ or
 simple_form_for @user do |f|
   = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object, current_user), :as => :check_boxes
 ```
+
+### Strong Parameters
+
+Make your controller aware of the passed parameters:
+
+```ruby
+def permitted_params
+  params.require(:base_object).permit(EffectiveRoles.permitted_params)
+end
+```
+
+The actual permitted parameters are:
+
+```ruby
+roles: []
+```
+
+## Summary
+
+Use the `effective_roles_summary` view helper to output a list of roles and descriptions.
+
+```ruby
+effective_roles_summary(user) # any acts_as_role_restricted object
+effective_roles_summary(post)
+```
+
 
 ## Summary table
 
