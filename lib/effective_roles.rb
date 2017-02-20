@@ -36,6 +36,8 @@ module EffectiveRoles
       roles.reject { |r| (obj & 2**roles.index(r)).zero? }
     elsif obj.kind_of?(Symbol)
       [roles.find { |role| role == obj }].compact
+    elsif obj.kind_of?(String)
+      [roles.find { |role| role == obj.to_sym }].compact
     elsif obj.nil?
       []
     else
