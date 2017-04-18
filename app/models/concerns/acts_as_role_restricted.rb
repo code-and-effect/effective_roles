@@ -57,7 +57,7 @@ module ActsAsRoleRestricted
 
       roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
 
-      where(roles.map { |role| "NOT(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' OR '))
+      where(roles.map { |role| "NOT(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' AND '))
     end
   end
 
