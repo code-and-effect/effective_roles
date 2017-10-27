@@ -83,7 +83,7 @@ All roles are defined in the config/effective_roles.rb initializer.  The roles a
 Assign roles:
 
 ```ruby
-post.roles = [:admin, :superamdin]
+post.roles = [:admin, :superadmin]
 post.save
 ```
 
