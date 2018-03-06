@@ -53,7 +53,7 @@ module EffectiveRoles
   def self.roles_collection(obj = nil, user = nil)
     assignable_roles_for(user, obj).map do |role|
       [
-        "#{role}<p class='help-block'>#{role_description(role, obj)}</p>".html_safe,
+        "#{role}<p class='help-block text-muted'>#{role_description(role, obj)}</p>".html_safe,
         role,
         ({:disabled => :disabled} if disabled_roles_for(obj).include?(role))
       ]
