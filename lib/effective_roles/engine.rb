@@ -4,13 +4,6 @@ module EffectiveRoles
 
     config.autoload_paths += Dir["#{config.root}/app/models/concerns"]
 
-    # Include Helpers to base application
-    initializer 'effective_roles.action_controller' do |app|
-      ActiveSupport.on_load :action_controller do
-        helper EffectiveRolesHelper
-      end
-    end
-
     # Include acts_as_addressable concern and allow any ActiveRecord object to call it
     initializer 'effective_roles.active_record' do |app|
       ActiveSupport.on_load :active_record do
