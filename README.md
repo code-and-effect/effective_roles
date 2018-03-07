@@ -61,17 +61,6 @@ class AddRolesToPost < ActiveRecord::Migration
 end
 ```
 
-## Strong Parameters
-
-Make your controller aware of the acts_as_role_restricted passed parameters:
-
-```ruby
-def permitted_params
-  params.require(:base_object).permit(:roles => [])
-end
-```
-
-
 ## Usage
 
 ### Defining Roles
@@ -178,37 +167,32 @@ before_filter :only => [:create, :update] do
 end
 ```
 
-
 ## Form Helper
 
 If you pass current_user (or any acts_as_role_restricted object) into these helpers, only the assignable_roles will be displayed.
 
-### Formtastic
+### effective_form_with
 
 ```ruby
-semantic_form_for @user do |f|
-  = effective_roles_fields(f)
+effective_form_with(model: @user) do |f|
+  = f.checks :roles, EffectiveRoles.roles_collection(f.object, current_user)
 ```
 
-or
-
 ```ruby
-semantic_form_for @user do |f|
-  = effective_roles_fields(f, current_user)
+effective_form_with(model: @user) do |f|
+  = f.radios :roles, EffectiveRoles.roles_collection(f.object, current_user)
 ```
 
 ### simple_form
 
 ```ruby
 simple_form_for @user do |f|
-  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object), :as => :check_boxes
+  = f.input :roles, collection: EffectiveRoles.roles_collection(f.object), as: :check_boxes
 ```
-
-or
 
 ```ruby
 simple_form_for @user do |f|
-  = f.input :roles, :collection => EffectiveRoles.roles_collection(f.object, current_user), :as => :check_boxes
+  = f.input :roles, collection: EffectiveRoles.roles_collection(f.object, current_user), as: :check_boxes
 ```
 
 ### Strong Parameters
@@ -327,17 +311,6 @@ MIT License.  Copyright [Code and Effect Inc.](http://www.codeandeffect.com/)
 ## Credits
 
 This model implements the https://github.com/ryanb/cancan/wiki/Role-Based-Authorization multi role based authorization based on the roles_mask field
-
-## Testing
-
-The test suite for this gem is unfortunately not yet complete.
-
-Run tests by:
-
-```ruby
-rake spec
-```
-
 
 ## Contributing
 

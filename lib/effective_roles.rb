@@ -17,14 +17,24 @@ module EffectiveRoles
   end
 
   def self.permitted_params
-    {roles: []}
+    { roles: [] }
   end
 
   def self.authorized?(controller, action, resource)
-    if authorization_method.respond_to?(:call) || authorization_method.kind_of?(Symbol)
-      raise Effective::AccessDenied.new() unless (controller || self).instance_exec(controller, action, resource, &authorization_method)
+    @_exceptions ||= [Effective::AccessDenied, (CanCan::AccessDenied if defined?(CanCan)), (Pundit::NotAuthorizedError if defined?(Pundit))].compact
+
+    return !!authorization_method unless authorization_method.respond_to?(:call)
+    controller = controller.controller if controller.respond_to?(:controller)
+
+    begin
+      !!(controller || self).instance_exec((controller || self), action, resource, &authorization_method)
+    rescue *@_exceptions
+      false
     end
-    true
+  end
+
+  def self.authorize!(controller, action, resource)
+    raise Effective::AccessDenied unless authorized?(controller, action, resource)
   end
 
   # This method converts whatever is given into its roles
@@ -93,7 +103,7 @@ module EffectiveRoles
     when :public
       controller.instance_variable_set(:@current_user, nil)
 
-      if defined?(EffectiveLogging) && EffectiveLogging.respond_to?(:supressed?)
+      if defined?(EffectiveLogging)
         EffectiveLogging.supressed { (controller.request.env['warden'].set_user(false) rescue nil) }
       else
         (controller.request.env['warden'].set_user(false) rescue nil)
@@ -108,7 +118,7 @@ module EffectiveRoles
     # Restore the existing current_user stuff
     if role == :public
       ActiveRecord::Base.transaction do
-        if defined?(EffectiveLogging) && EffectiveLogging.respond_to?(:supressed?)
+        if defined?(EffectiveLogging)
           EffectiveLogging.supressed { (controller.request.env['warden'].set_user(current_user) rescue nil) }
         else
           (controller.request.env['warden'].set_user(current_user) rescue nil)
