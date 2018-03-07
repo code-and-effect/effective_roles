@@ -1,8 +1,6 @@
-.effective-role
-  %p
-    %label.control-label Roles
-
-- roles.each do |role|
-  .effective-role
-    %p= role
-    %p.help-block= descriptions[role]
+.form-group
+  %label.control-label Roles
+  - roles.each do |role|
+    .effective-role
+      = role
+      %p.text-muted.help-block= descriptions[role]
