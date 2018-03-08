@@ -63,31 +63,33 @@ module EffectiveRolesHelper
   end
 
   def effective_roles_authorization_badge(level)
+    label = defined?(EffectiveBootstrap) ? 'badge' : 'label'
+
     case level
     when :manage
-      content_tag(:span, 'Full', class: 'label label-primary badge badge-primary')
+      content_tag(:span, 'Full', class: "#{label} #{label}-primary")
     when :update
-      content_tag(:span, 'Edit', class: 'label label-success badge badge-success')
+      content_tag(:span, 'Edit', class: "#{label} #{label}-success")
     when :update_own
-      content_tag(:span, 'Edit Own', class: 'label label-info badge badge-info')
+      content_tag(:span, 'Edit Own', class: "#{label} #{label}-info")
     when :create
-      content_tag(:span, 'Create', class: 'label label-success badge badge-success')
+      content_tag(:span, 'Create', class: "#{label} #{label}-success")
     when :show
-      content_tag(:span, 'Read only', class: 'label label-warning badge badge-warning')
+      content_tag(:span, 'Read only', class: "#{label} #{label}-warning")
     when :index
-      content_tag(:span, 'Read only', class: 'label label-warning badge badge-warning')
+      content_tag(:span, 'Read only', class: "#{label} #{label}-warning")
     when :destroy
-      content_tag(:span, 'Delete only', class: 'label label-warning badge badge-warning')
+      content_tag(:span, 'Delete only', class: "#{label} #{label}-warning")
     when :none
-      content_tag(:span, 'No Access', class: 'label label-danger badge badge-danger')
+      content_tag(:span, 'No Access', class: "#{label} #{label}-danger")
     when :yes
-      content_tag(:span, 'Yes', class: 'label label-primary badge badge-primary')
+      content_tag(:span, 'Yes', class: "#{label} #{label}-primary")
     when :no
-      content_tag(:span, 'No', class: 'label label-danger badge badge-danger')
+      content_tag(:span, 'No', class: "#{label} #{label}-danger")
     when :unknown
-      content_tag(:span, 'Unknown', class: 'label badge')
+      content_tag(:span, 'Unknown', class: "#{label}")
     else
-      content_tag(:span, level.to_s.titleize, class: 'label label-info badge badge-info')
+      content_tag(:span, level.to_s.titleize, class: "#{label} #{label}-info")
     end
   end
 
