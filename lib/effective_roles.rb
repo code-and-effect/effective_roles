@@ -4,11 +4,9 @@ require 'effective_roles/version'
 module EffectiveRoles
   mattr_accessor :roles
   mattr_accessor :role_descriptions
-
-  mattr_accessor :layout
-
   mattr_accessor :assignable_roles
 
+  mattr_accessor :layout
   mattr_accessor :authorization_method
 
   def self.setup
@@ -101,6 +99,7 @@ module EffectiveRoles
     raise('expected current_user to respond to is_role_restricted?') if current_user && !current_user.respond_to?(:is_role_restricted?)
     
     multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
+    current_user ||= (EffectiveRoles.current_user || (EffectiveLogging.current_user if defined?(EffectiveLogging)))
 
     assignable = if assignable_roles.kind_of?(Array)
       assignable_roles
