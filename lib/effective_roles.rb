@@ -8,7 +8,6 @@ module EffectiveRoles
   mattr_accessor :layout
 
   mattr_accessor :assignable_roles
-  mattr_accessor :disabled_roles
 
   mattr_accessor :authorization_method
 
@@ -37,6 +36,15 @@ module EffectiveRoles
     raise Effective::AccessDenied unless authorized?(controller, action, resource)
   end
 
+  # This is set by the "set_effective_roles_current_user" before_filter.
+  def self.current_user=(user)
+    @effective_roles_current_user = user
+  end
+
+  def self.current_user
+    @effective_roles_current_user
+  end
+
   # This method converts whatever is given into its roles
   # Pass an object, Integer, or Symbol to find corresponding role
   def self.roles_for(obj)
@@ -48,26 +56,38 @@ module EffectiveRoles
       [roles.find { |role| role == obj }].compact
     elsif obj.kind_of?(String)
       [roles.find { |role| role == obj.to_sym }].compact
+    elsif obj.kind_of?(Array)
+      obj.map { |obj| roles_for(obj) }.flatten.compact
     elsif obj.nil?
       []
     else
-      raise 'unsupported object passed to EffectiveRoles.roles_for method.  Expecting an acts_as_role_restricted object or a roles_mask integer'
+      raise 'unsupported object passed to EffectiveRoles.roles_for method. Expecting an acts_as_role_restricted object or a roles_mask integer'
     end
   end
 
   # EffectiveRoles.roles_mask_for(:admin, :member)
   def self.roles_mask_for(*roles)
-    (Array(roles).flatten.map(&:to_sym) & EffectiveRoles.roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
+    roles_for(roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
   end
 
-  def self.roles_collection(obj = nil, user = nil)
-    assignable_roles_for(user, obj).map do |role|
+  def self.roles_collection(obj = nil, user = nil, only: nil, except: nil)
+    raise('expected object to respond to is_role_restricted?') unless obj.respond_to?(:is_role_restricted?)
+    raise('expected user to respond to is_role_restricted?') unless user.respond_to?(:is_role_restricted?)
+
+    only = Array(only).compact
+    except = Array(except).compact
+    assignable = assignable_roles_for(user, obj)
+
+    roles.map do |role|
+      next if only.present? && !only.include?(role)
+      next if except.present? && except.include?(role)
+
       [
         "#{role}<p class='help-block text-muted'>#{role_description(role, obj)}</p>".html_safe,
         role,
-        ({:disabled => :disabled} if disabled_roles_for(obj).include?(role))
+        ({:disabled => :disabled} unless assignable.include?(role))
       ]
-    end
+    end.compact
   end
 
   def self.assignable_roles_for(user, obj = nil)
@@ -140,19 +160,6 @@ module EffectiveRoles
   def self.role_description(role, obj = nil)
     raise 'EffectiveRoles config.role_descriptions must be a Hash' unless role_descriptions.kind_of?(Hash)
     (role_descriptions[obj.try(:class).to_s] || {})[role] || role_descriptions[role] || ''
-  end
-
-  def self.disabled_roles_for(obj)
-    raise 'EffectiveRoles config.disabled_roles must be a Hash, Array or nil' unless [Hash, Array, NilClass].include?(disabled_roles.class)
-
-    case disabled_roles
-    when Array
-      disabled_roles
-    when Hash
-      Array(disabled_roles[obj.try(:class).to_s])
-    else
-      []
-    end
   end
 
   def self._authorization_level(controller, role, resource, auth_method)
