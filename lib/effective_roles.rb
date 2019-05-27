@@ -70,36 +70,52 @@ module EffectiveRoles
     roles_for(roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
   end
 
-  def self.roles_collection(obj = nil, user = nil, only: nil, except: nil)
-    raise('expected object to respond to is_role_restricted?') unless obj.respond_to?(:is_role_restricted?)
-    raise('expected user to respond to is_role_restricted?') unless user.respond_to?(:is_role_restricted?)
+  def self.roles_collection(resource, current_user = nil, only: nil, except: nil, multiple: nil)
+    if assignable_roles.present?
+      raise('expected object to respond to is_role_restricted?') unless resource.respond_to?(:is_role_restricted?)
+      raise('expected current_user to respond to is_role_restricted?') if current_user && !current_user.respond_to?(:is_role_restricted?)
+    end
 
     only = Array(only).compact
     except = Array(except).compact
-    assignable = assignable_roles_for(user, obj)
+    multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
+    assignable = assignable_roles_collection(resource, current_user, multiple: multiple)
 
     roles.map do |role|
       next if only.present? && !only.include?(role)
       next if except.present? && except.include?(role)
 
       [
-        "#{role}<p class='help-block text-muted'>#{role_description(role, obj)}</p>".html_safe,
+        "#{role}<p class='help-block text-muted'>#{role_description(role, resource)}</p>".html_safe,
         role,
         ({:disabled => :disabled} unless assignable.include?(role))
       ]
     end.compact
   end
 
-  def self.assignable_roles_for(user, obj = nil)
-    raise 'EffectiveRoles config.assignable_roles_for must be a Hash, Array or nil' unless [Hash, Array, NilClass].include?(assignable_roles.class)
-
-    return assignable_roles if assignable_roles.kind_of?(Array)
+  def self.assignable_roles_collection(resource, current_user = nil, multiple: nil)
     return roles if assignable_roles.nil?
-    return roles if !user.respond_to?(:is_role_restricted?) # All roles, if the user (or object) is not role_resticted
 
-    assignable = assignable_roles[obj.try(:class).to_s] || assignable_roles || {}
+    raise 'EffectiveRoles config.assignable_roles_for must be a Hash, Array or nil' unless [Hash, Array].include?(assignable_roles.class)
+    raise('expected resource to respond to is_role_restricted?') unless resource.respond_to?(:is_role_restricted?)
+    raise('expected current_user to respond to is_role_restricted?') if current_user && !current_user.respond_to?(:is_role_restricted?)
+    
+    multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
 
-    user.roles.map { |role| assignable[role] }.flatten.compact.uniq
+    assignable = if assignable_roles.kind_of?(Array)
+      assignable_roles
+    elsif current_user.present?
+      current_roles = assignable_roles[resource.try(:class).to_s] || assignable_roles || {}
+      current_user.roles.map { |role| current_roles[role] }.flatten.compact.uniq
+    else
+      assignable_roles[resource.try(:class).to_s] || []
+    end
+
+    # Check boxes
+    return assignable if multiple
+
+    # Radios
+    (resource.roles - assignable).present? ? [] : assignable
   end
 
   # This is used by the effective_roles_summary_table helper method

@@ -17,8 +17,8 @@ module ActsAsRoleRestricted
   extend ActiveSupport::Concern
 
   module ActiveRecord
-    def acts_as_role_restricted(*options)
-      @acts_as_role_restricted_opts = options || []
+    def acts_as_role_restricted(multiple: false)
+      @acts_as_role_restricted_opts = { multiple: multiple }
       include ::ActsAsRoleRestricted
     end
   end
@@ -26,19 +26,22 @@ module ActsAsRoleRestricted
   included do
     attr_accessor(:current_user) unless respond_to?(:current_user)
 
+    acts_as_role_restricted_options = @acts_as_role_restricted_opts.dup
+    self.send(:define_method, :acts_as_role_restricted_options) { acts_as_role_restricted_options }
+
     validates :roles_mask, numericality: true, allow_nil: true
 
     validate(if: -> { changes.include?(:roles_mask) }) do
       user = current_user || EffectiveRoles.current_user || (EffectiveLogging.current_user if defined?(EffectiveLogging))
 
       if user.blank? && EffectiveRoles.assignable_roles.present? && defined?(Rails::Server)
-        self.errors.add(:roles, 'current_user must be present when changing roles')
+        self.errors.add(:roles, 'current_user must be present when assigning roles')
       end
 
       roles_was = EffectiveRoles.roles_for(changes[:roles_mask].first)
       changed = (roles + roles_was) - (roles & roles_was)  # XOR
 
-      assignable = EffectiveRoles.assignable_roles_for(user, self) # Returns all roles when user is blank
+      assignable = EffectiveRoles.assignable_roles_collection(self, user) # Returns all roles when user is blank
       unauthorized = changed - assignable
 
       authorized = roles.dup

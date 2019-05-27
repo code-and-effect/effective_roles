@@ -41,7 +41,8 @@ Add the mixin to an existing model:
 
 ```ruby
 class Post
-  acts_as_role_restricted
+  acts_as_role_restricted                  # Singular role, use radio buttons
+  acts_as_role_restricted multiple: true   # Multiple roles. use check boxes
 end
 ```
 
@@ -153,25 +154,23 @@ See the initializers/effective_roles.rb for more information.
   }
 ```
 
-When used in a Form Helper (see below), only the appropriate roles will be displayed.
+When using assignable roles, you must assign the acts_as_role_restricted resource a `current_user` when saving changes to the roles or roles mask:
 
-However, this restriction is not enforced on the controller level, so someone could inspect & re-write the form parameters and still assign a role that they are not allowed to.
+You can do this in one of three ways:
 
-To prevent this, add something like the following code to your controller:
+1. Setting resource.current_user = current_user in your controller directly.
+2. Add `before_action :set_effective_roles_current_user` to your ApplicationController
+3. Using `Effective::CrudController` to do this automatically.
 
-```ruby
-before_filter :only => [:create, :update] do
-  if params[:user] && params[:user][:roles]
-    params[:user][:roles] = params[:user][:roles] & EffectiveRoles.assignable_roles_for(current_user, User.new()).map(&:to_s)
-  end
-end
-```
+This restriction is only applied when running within the rails server. Not on rails console or db:seeds.
 
 ## Form Helper
 
 If you pass current_user (or any acts_as_role_restricted object) into these helpers, only the assignable_roles will be displayed.
 
 ### effective_form_with
+
+Depending on your `acts_as_role_restricted multiple: ` value:
 
 ```ruby
 effective_form_with(model: @user) do |f|
@@ -187,12 +186,12 @@ effective_form_with(model: @user) do |f|
 
 ```ruby
 simple_form_for @user do |f|
-  = f.input :roles, collection: EffectiveRoles.roles_collection(f.object), as: :check_boxes
+  = f.input :roles, collection: EffectiveRoles.roles_collection(f.object, current_user), as: :check_boxes
 ```
 
 ```ruby
 simple_form_for @user do |f|
-  = f.input :roles, collection: EffectiveRoles.roles_collection(f.object, current_user), as: :check_boxes
+  = f.input :roles, collection: EffectiveRoles.roles_collection(f.object, current_user), as: :radio_buttons
 ```
 
 ### Strong Parameters
