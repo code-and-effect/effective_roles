@@ -24,7 +24,29 @@ module ActsAsRoleRestricted
   end
 
   included do
-    validates :roles_mask, :numericality => true, :allow_nil => true
+    attr_accessor(:current_user) unless respond_to?(:current_user)
+
+    validates :roles_mask, numericality: true, allow_nil: true
+
+    validate(if: -> { changes.include?(:roles_mask) }) do
+      user = current_user || EffectiveRoles.current_user || (EffectiveLogging.current_user if defined?(EffectiveLogging))
+
+      if user.blank? && EffectiveRoles.assignable_roles.present? && defined?(Rails::Server)
+        self.errors.add(:roles, 'current_user must be present when changing roles')
+      end
+
+      roles_was = EffectiveRoles.roles_for(changes[:roles_mask].first)
+      changed = (roles + roles_was) - (roles & roles_was)  # XOR
+
+      assignable = EffectiveRoles.assignable_roles_for(user, self) # Returns all roles when user is blank
+      unauthorized = changed - assignable
+
+      authorized = roles.dup
+      unauthorized.each { |role| authorized.include?(role) ? authorized.delete(role) : authorized.push(role) }
+
+      self.roles_mask = EffectiveRoles.roles_mask_for(authorized)
+    end
+
   end
 
   module ClassMethods
@@ -45,16 +67,15 @@ module ActsAsRoleRestricted
 
     def with_role_sql(*roles)
       roles = roles.flatten.compact
-      roles = roles.first.try(:roles) if roles.length == 1 and roles.first.respond_to?(:roles)
-
+      roles = roles.first.roles if roles.length == 1 && roles.first.respond_to?(:roles)
       roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
+
       roles.map { |role| "(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' OR ')
     end
 
     def without_role(*roles)
       roles = roles.flatten.compact
-      roles = roles.first.try(:roles) if roles.length == 1 and roles.first.respond_to?(:roles)
-
+      roles = roles.first.roles if roles.length == 1 && roles.first.respond_to?(:roles)
       roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
 
       where(
@@ -64,11 +85,11 @@ module ActsAsRoleRestricted
   end
 
   def roles=(roles)
-    self.roles_mask = (Array(roles).flatten.map(&:to_sym) & EffectiveRoles.roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
+    self.roles_mask = EffectiveRoles.roles_mask_for(roles)
   end
 
   def roles
-    EffectiveRoles.roles.reject { |r| ((roles_mask || 0) & 2**EffectiveRoles.roles.index(r)).zero? }
+    EffectiveRoles.roles_for(roles_mask)
   end
 
   # if user.is? :admin
