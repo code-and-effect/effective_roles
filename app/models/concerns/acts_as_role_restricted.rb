@@ -6,11 +6,9 @@
 #
 # Mark your model with 'acts_as_role_restricted'
 #
-# and create the migration
+# and create the migration to add the following field:
 #
-# structure do
-#    roles_mask              :integer, :default => 0
-# end
+# roles_mask :integer
 #
 
 module ActsAsRoleRestricted
