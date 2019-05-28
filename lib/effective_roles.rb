@@ -104,10 +104,11 @@ module EffectiveRoles
     assignable = if assignable_roles.kind_of?(Array)
       assignable_roles
     elsif current_user.present?
-      current_roles = assignable_roles[resource.try(:class).to_s] || assignable_roles || {}
+      current_roles = assignable_roles[resource.class.to_s] || assignable_roles || {}
       current_user.roles.map { |role| current_roles[role] }.flatten.compact.uniq
     else
-      assignable_roles[resource.try(:class).to_s] || []
+      current_roles = assignable_roles[resource.class.to_s] || assignable_roles || {}
+      current_roles.values.flatten.uniq
     end
 
     # Check boxes
