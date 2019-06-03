@@ -29,10 +29,10 @@ module ActsAsRoleRestricted
 
     validates :roles_mask, numericality: true, allow_nil: true
 
-    validate(if: -> { changes.include?(:roles_mask) }) do
+    validate(if: -> { changes.include?(:roles_mask) && EffectiveRoles.assignable_roles_present?(self) }) do
       user = current_user || EffectiveRoles.current_user || (EffectiveLogging.current_user if defined?(EffectiveLogging))
 
-      if user.blank? && EffectiveRoles.assignable_roles.present? && defined?(Rails::Server)
+      if user.blank? && defined?(Rails::Server)
         self.errors.add(:roles, 'current_user must be present when assigning roles')
       end
 
@@ -44,6 +44,10 @@ module ActsAsRoleRestricted
 
       authorized = roles.dup
       unauthorized.each { |role| authorized.include?(role) ? authorized.delete(role) : authorized.push(role) }
+
+      if unauthorized.present?
+        Rails.logger.info "\e[31m unassignable roles: #{unauthorized.map { |role| ":#{role}" }.to_sentence}"
+      end
 
       self.roles_mask = EffectiveRoles.roles_mask_for(authorized)
     end

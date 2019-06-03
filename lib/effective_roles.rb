@@ -92,14 +92,13 @@ module EffectiveRoles
   end
 
   def self.assignable_roles_collection(resource, current_user = nil, multiple: nil)
-    return roles if assignable_roles.nil?
+    return roles unless assignable_roles_present?(resource)
 
-    raise 'EffectiveRoles config.assignable_roles_for must be a Hash, Array or nil' unless [Hash, Array].include?(assignable_roles.class)
-    raise('expected resource to respond to is_role_restricted?') unless resource.respond_to?(:is_role_restricted?)
-    raise('expected current_user to respond to is_role_restricted?') if current_user && !current_user.respond_to?(:is_role_restricted?)
-    
-    multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
     current_user ||= (EffectiveRoles.current_user || (EffectiveLogging.current_user if defined?(EffectiveLogging)))
+
+    if current_user && !current_user.respond_to?(:is_role_restricted?)
+      raise('expected current_user to respond to is_role_restricted?') 
+    end
 
     assignable = if assignable_roles.kind_of?(Array)
       assignable_roles
@@ -112,10 +111,28 @@ module EffectiveRoles
     end
 
     # Check boxes
+    multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
     return assignable if multiple
 
     # Radios
     (resource.roles - assignable).present? ? [] : assignable
+  end
+
+  def self.assignable_roles_present?(resource)
+    return false if assignable_roles.nil?
+
+    raise 'EffectiveRoles config.assignable_roles_for must be a Hash, Array or nil' unless [Hash, Array].include?(assignable_roles.class)
+    raise('expected resource to respond to is_role_restricted?') unless resource.respond_to?(:is_role_restricted?)
+
+    return assignable_roles.present? if assignable_roles.kind_of?(Array)
+
+    if assignable_roles.kind_of?(Array)
+      assignable_roles
+    elsif assignable_roles.key?(resource.class.to_s)
+      assignable_roles[resource.class.to_s]
+    else
+      assignable_roles
+    end.present?
   end
 
   # This is used by the effective_roles_summary_table helper method
