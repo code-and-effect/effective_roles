@@ -53,6 +53,8 @@ EffectiveRoles.setup do |config|
   #     :superadmin => [:superadmin, :admin, :member],  # Superadmins may create Pages for any role
   #     :admin => [:admin, :member],                    # Admins may create Pages for admin and members
   #     :member => [:member]                            # Members may create Pages for members
+  #   },
+  #   'Post' => false                                   # Don't enforce assignable roles validation
   #   }
   #
   # Or just keep it simple, and use this Hash syntax of permissions for every resource
