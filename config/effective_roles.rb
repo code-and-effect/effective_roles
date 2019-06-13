@@ -62,7 +62,8 @@ EffectiveRoles.setup do |config|
   # config.assignable_roles = {
   #   :superadmin => [:superadmin, :admin, :member], # Superadmins may assign any resource any role
   #   :admin => [:admin, :member],                   # Admins may only assign the :admin or :member role
-  #   :member => []                                  # Members may not assign any roles
+  #   :member => [],                                 # Members may not assign any roles
+  #   :new_record => [:member]                       # Member may be assigned to a new_record without a current_user
   # }
 
   # Authorization Method

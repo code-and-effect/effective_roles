@@ -100,22 +100,41 @@ module EffectiveRoles
       raise('expected current_user to respond to is_role_restricted?') 
     end
 
-    assignable = if assignable_roles.kind_of?(Array)
-      assignable_roles
-    elsif current_user.present?
-      current_roles = assignable_roles[resource.class.to_s] || assignable_roles || {}
-      current_user.roles.map { |role| current_roles[role] }.flatten.compact.uniq
-    else
-      current_roles = assignable_roles[resource.class.to_s] || assignable_roles || {}
-      current_roles.values.flatten.uniq
+    if !resource.respond_to?(:is_role_restricted?)
+      raise('expected current_user to respond to is_role_restricted?') 
     end
+
+    assigned_roles = if assignable_roles.kind_of?(Hash)
+      assignable = (assignable_roles[resource.class.to_s] || assignable_roles || {})
+      assigned = [] # our return value
+
+      if current_user.blank?
+        assigned = assignable.values.flatten
+      end
+
+      if current_user.present?
+        assigned = current_user.roles.map { |role| assignable[role] }.flatten.compact
+      end
+
+      if assignable[:new_record] && resource.new_record?
+        assigned += Array(assignable[:new_record])
+      end
+
+      if assignable[:persisted] && resource.persisted?
+        assigned += Array(assignable[:persisted])
+      end
+
+      assigned
+    elsif assignable_roles.kind_of?(Array)
+      assignable_roles
+    end.uniq
 
     # Check boxes
     multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
-    return assignable if multiple
+    return assigned_roles if multiple
 
     # Radios
-    (resource.roles - assignable).present? ? [] : assignable
+    (resource.roles - assigned_roles).present? ? [] : assigned_roles
   end
 
   def self.assignable_roles_present?(resource)

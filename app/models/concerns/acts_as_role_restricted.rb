@@ -32,10 +32,6 @@ module ActsAsRoleRestricted
     validate(if: -> { changes.include?(:roles_mask) && EffectiveRoles.assignable_roles_present?(self) }) do
       user = current_user || EffectiveRoles.current_user || (EffectiveLogging.current_user if defined?(EffectiveLogging))
 
-      if user.blank? && defined?(Rails::Server)
-        self.errors.add(:roles, 'current_user must be present when assigning roles')
-      end
-
       roles_was = EffectiveRoles.roles_for(changes[:roles_mask].first)
       changed = (roles + roles_was) - (roles & roles_was)  # XOR
 
@@ -47,6 +43,10 @@ module ActsAsRoleRestricted
 
       if unauthorized.present?
         Rails.logger.info "\e[31m unassignable roles: #{unauthorized.map { |role| ":#{role}" }.to_sentence}"
+      end
+
+      if unauthorized.present? && user.blank? && defined?(Rails::Server)
+        self.errors.add(:roles, 'current_user must be present when assigning roles')
       end
 
       self.roles_mask = EffectiveRoles.roles_mask_for(authorized)
