@@ -7,7 +7,7 @@ module EffectiveRoles
     # Include acts_as_addressable concern and allow any ActiveRecord object to call it
     initializer 'effective_roles.active_record' do |app|
       ActiveSupport.on_load :active_record do
-        ActiveRecord::Base.extend(ActsAsRoleRestricted::ActiveRecord)
+        ActiveRecord::Base.extend(ActsAsRoleRestricted::Base)
       end
     end
 

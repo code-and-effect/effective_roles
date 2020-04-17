@@ -14,7 +14,7 @@
 module ActsAsRoleRestricted
   extend ActiveSupport::Concern
 
-  module ActiveRecord
+  module Base
     def acts_as_role_restricted(multiple: false)
       @acts_as_role_restricted_opts = { multiple: multiple }
       include ::ActsAsRoleRestricted
