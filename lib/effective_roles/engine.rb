@@ -1,8 +1,8 @@
+require 'effective_roles/set_current_user'
+
 module EffectiveRoles
   class Engine < ::Rails::Engine
     engine_name 'effective_roles'
-
-    config.autoload_paths += Dir["#{config.root}/app/models/concerns", "#{config.root}/lib/"]
 
     # Include acts_as_addressable concern and allow any ActiveRecord object to call it
     initializer 'effective_roles.active_record' do |app|
