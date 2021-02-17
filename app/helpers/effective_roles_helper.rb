@@ -101,4 +101,108 @@ module EffectiveRolesHelper
     klass.respond_to?(:name) ? klass.name : klass.to_s
   end
 
+  # This is used by the effective_roles_summary_table helper method
+  def effective_roles_authorization_level(controller, role, resource)
+    authorization_method = EffectiveRoles.config.authorization_method
+
+    raise('expected an authorization method') unless (authorization_method.respond_to?(:call) || authorization_method.kind_of?(Symbol))
+    return :unknown unless (controller.current_user rescue nil).respond_to?(:roles=)
+
+    # Store the current ability (cancan support) and roles
+    current_ability = controller.instance_variable_get(:@current_ability)
+    current_user = controller.instance_variable_get(:@current_user)
+    current_user_roles = controller.current_user.roles
+
+    # Set up the user, so the check is done with the desired permission level
+    controller.instance_variable_set(:@current_ability, nil)
+
+    level = nil
+
+    case role
+    when :signed_in
+      controller.current_user.roles = []
+    when :public
+      controller.instance_variable_set(:@current_user, nil)
+
+      if defined?(EffectiveLogging)
+        EffectiveLogging.supressed { (controller.request.env['warden'].set_user(false) rescue nil) }
+      else
+        (controller.request.env['warden'].set_user(false) rescue nil)
+      end
+    else
+      controller.current_user.roles = [role]
+    end
+
+    # Find the actual authorization level
+    level = effective_roles_item_authorization_level(controller, role, resource, authorization_method)
+
+    # Restore the existing current_user stuff
+    if role == :public
+      ActiveRecord::Base.transaction do
+        if defined?(EffectiveLogging)
+          EffectiveLogging.supressed { (controller.request.env['warden'].set_user(current_user) rescue nil) }
+        else
+          (controller.request.env['warden'].set_user(current_user) rescue nil)
+        end
+
+        raise ActiveRecord::Rollback
+      end
+    end
+
+    controller.instance_variable_set(:@current_ability, current_ability)
+    controller.instance_variable_set(:@current_user, current_user)
+    controller.current_user.roles = current_user_roles
+
+    level
+  end
+
+  def effective_roles_item_authorization_level(controller, role, resource, auth_method)
+    resource = (resource.new() rescue resource) if resource.kind_of?(ActiveRecord::Base)
+
+    # Custom actions
+    if resource.kind_of?(Hash)
+      resource.each do |key, value|
+        return (controller.instance_exec(controller, key, value, &auth_method) rescue false) ? :yes : :no
+      end
+    end
+
+    # Check for Manage
+    return :manage if (
+      (controller.instance_exec(controller, :create, resource, &auth_method) rescue false) &&
+      (controller.instance_exec(controller, :update, resource, &auth_method) rescue false) &&
+      (controller.instance_exec(controller, :show, resource, &auth_method) rescue false) &&
+      (controller.instance_exec(controller, :destroy, resource, &auth_method) rescue false)
+    )
+
+    # Check for Update
+    return :update if (controller.instance_exec(controller, :update, resource, &auth_method) rescue false)
+
+    # Check for Update Own
+    if resource.respond_to?('user=')
+      resource.user = controller.current_user
+      return :update_own if (controller.instance_exec(controller, :update, resource, &auth_method) rescue false)
+      resource.user = nil
+    elsif resource.respond_to?('user_id=')
+      resource.user_id = controller.current_user.id
+      return :update_own if (controller.instance_exec(controller, :update, resource, &auth_method) rescue false)
+      resource.user_id = nil
+    elsif resource.class.name.end_with?('User')
+      return :update_own if (controller.instance_exec(controller, :update, controller.current_user, &auth_method) rescue false)
+    end
+
+    # Check for Create
+    return :create if (controller.instance_exec(controller, :create, resource, &auth_method) rescue false)
+
+    # Check for Show
+    return :show if (controller.instance_exec(controller, :show, resource, &auth_method) rescue false)
+
+    # Check for Index
+    return :index if (controller.instance_exec(controller, :index, resource, &auth_method) rescue false)
+
+    # Check for Destroy
+    return :destroy if (controller.instance_exec(controller, :destroy, resource, &auth_method) rescue false)
+
+    :none
+  end
+
 end
