@@ -2,15 +2,26 @@ require 'effective_roles/engine'
 require 'effective_roles/version'
 
 module EffectiveRoles
-  mattr_accessor :roles
-  mattr_accessor :role_descriptions
-  mattr_accessor :assignable_roles
+  # mattr_accessor :roles
+  # mattr_accessor :role_descriptions
+  # mattr_accessor :assignable_roles
 
-  mattr_accessor :layout
-  mattr_accessor :authorization_method
+  # mattr_accessor :layout
+  # mattr_accessor :authorization_method
 
-  def self.setup
-    yield self
+  def self.config(namespace = nil)
+    @config ||= ActiveSupport::OrderedOptions.new
+    namespace ||= Tenant.current if defined?(Tenant)
+
+    if namespace
+      @config[namespace] ||= ActiveSupport::OrderedOptions.new
+    else
+      @config
+    end
+  end
+
+  def self.setup(namespace = nil, &block)
+    yield(config(namespace))
   end
 
   def self.permitted_params
@@ -97,11 +108,11 @@ module EffectiveRoles
     current_user ||= (EffectiveRoles.current_user || (EffectiveLogging.current_user if defined?(EffectiveLogging)))
 
     if current_user && !current_user.respond_to?(:is_role_restricted?)
-      raise('expected current_user to respond to is_role_restricted?') 
+      raise('expected current_user to respond to is_role_restricted?')
     end
 
     if !resource.respond_to?(:is_role_restricted?)
-      raise('expected current_user to respond to is_role_restricted?') 
+      raise('expected current_user to respond to is_role_restricted?')
     end
 
     assigned_roles = if assignable_roles.kind_of?(Hash)
