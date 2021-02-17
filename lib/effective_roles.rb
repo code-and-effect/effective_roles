@@ -1,3 +1,4 @@
+require 'effective_resources'
 require 'effective_roles/engine'
 require 'effective_roles/version'
 
@@ -31,11 +32,11 @@ module EffectiveRoles
   def self.authorized?(controller, action, resource)
     @_exceptions ||= [Effective::AccessDenied, (CanCan::AccessDenied if defined?(CanCan)), (Pundit::NotAuthorizedError if defined?(Pundit))].compact
 
-    return !!authorization_method unless authorization_method.respond_to?(:call)
+    return !!config.authorization_method unless config.authorization_method.respond_to?(:call)
     controller = controller.controller if controller.respond_to?(:controller)
 
     begin
-      !!(controller || self).instance_exec((controller || self), action, resource, &authorization_method)
+      !!(controller || self).instance_exec((controller || self), action, resource, &config.authorization_method)
     rescue *@_exceptions
       false
     end
@@ -60,11 +61,11 @@ module EffectiveRoles
     if obj.respond_to?(:is_role_restricted?)
      obj.roles
     elsif obj.kind_of?(Integer)
-      roles.reject { |r| (obj & 2**roles.index(r)).zero? }
+      config.roles.reject { |r| (obj & 2**config.roles.index(r)).zero? }
     elsif obj.kind_of?(Symbol)
-      [roles.find { |role| role == obj }].compact
+      Array(config.roles.find { |role| role == obj })
     elsif obj.kind_of?(String)
-      [roles.find { |role| role == obj.to_sym }].compact
+      Array(config.roles.find { |role| role == obj.to_sym })
     elsif obj.kind_of?(Array)
       obj.map { |obj| roles_for(obj) }.flatten.compact
     elsif obj.nil?
@@ -167,7 +168,7 @@ module EffectiveRoles
 
   # This is used by the effective_roles_summary_table helper method
   def self.authorization_level(controller, role, resource)
-    return :unknown unless (authorization_method.respond_to?(:call) || authorization_method.kind_of?(Symbol))
+    return :unknown unless (config.authorization_method.respond_to?(:call) || config.authorization_method.kind_of?(Symbol))
     return :unknown unless (controller.current_user rescue nil).respond_to?(:roles=)
 
     # Store the current ability (cancan support) and roles
@@ -196,7 +197,7 @@ module EffectiveRoles
     end
 
     # Find the actual authorization level
-    level = _authorization_level(controller, role, resource, authorization_method)
+    level = _authorization_level(controller, role, resource, config.authorization_method)
 
     # Restore the existing current_user stuff
     if role == :public
@@ -255,7 +256,7 @@ module EffectiveRoles
       resource.user_id = controller.current_user.id
       return :update_own if (controller.instance_exec(controller, :update, resource, &auth_method) rescue false)
       resource.user_id = nil
-    elsif resource.kind_of?(User)
+    elsif resource.class.name.end_with?('User')
       return :update_own if (controller.instance_exec(controller, :update, controller.current_user, &auth_method) rescue false)
     end
 

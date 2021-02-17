@@ -1,12 +1,17 @@
 module Admin
   class RolesController < ApplicationController
-    before_action :authenticate_user!
+    before_action(:authenticate_user!) if defined?(Devise)
+    before_action { EffectiveRoles.authorize!(self, :admin, :effective_roles) }
 
-    layout (EffectiveRoles.config.layout.kind_of?(Hash) ? EffectiveRoles.config.layout[:admin_roles] : EffectiveRoles.config.layout)
+    include Effective::CrudController
+
+    if (config = EffectiveRoles.config.layout)
+      layout(config.kind_of?(Hash) ? config[:admin] : config)
+    end
 
     def index
       @page_title = 'Roles'
-      EffectiveRoles.authorize!(self, :admin, :effective_roles)
     end
+
   end
 end
