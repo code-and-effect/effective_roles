@@ -2,7 +2,7 @@ module EffectiveRolesHelper
   def effective_roles_summary(obj, options = {}) # User or a Post, any acts_as_roleable
     raise 'expected an acts_as_roleable object' unless obj.respond_to?(:roles)
 
-    descriptions = EffectiveRoles.role_descriptions[obj.class.name] || EffectiveRoles.role_descriptions || {}
+    descriptions = EffectiveRoles.config.role_descriptions[obj.class.name] || EffectiveRoles.config.role_descriptions || {}
     opts = { obj: obj, roles: obj.roles, descriptions: descriptions }.merge(options)
 
     render partial: 'effective/roles/summary', locals: opts
@@ -17,7 +17,7 @@ module EffectiveRolesHelper
     raise 'Expected argument to be a Hash' unless opts.kind_of?(Hash)
 
     roles = Array(opts[:roles]).presence
-    roles ||= [:public, :signed_in] + EffectiveRoles.roles
+    roles ||= [:public, :signed_in] + EffectiveRoles.config.roles
 
     if opts[:only].present?
       klasses = Array(opts[:only])

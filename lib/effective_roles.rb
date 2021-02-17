@@ -76,7 +76,7 @@ module EffectiveRoles
 
   # EffectiveRoles.roles_mask_for(:admin, :member)
   def self.roles_mask_for(*roles)
-    roles_for(roles).map { |r| 2**EffectiveRoles.roles.index(r) }.sum
+    roles_for(roles).map { |r| 2**EffectiveRoles.config.roles.index(r) }.sum
   end
 
   def self.roles_collection(resource, current_user = nil, only: nil, except: nil, multiple: nil)
