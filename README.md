@@ -8,10 +8,6 @@ Includes a mixin for adding authentication for any model.
 
 SQL Finders for returning an ActiveRecord::Relation with all permitted records.
 
-Handy formtastic and simple_form helpers for assigning roles.
-
-Rails 3.2.x and Rails 4
-
 
 ## Getting Started
 
@@ -158,8 +154,8 @@ When using assignable roles, you must assign the acts_as_role_restricted resourc
 
 You can do this in one of three ways:
 
-1. Setting resource.current_user = current_user in your controller directly.
-2. Add `before_action :set_effective_roles_current_user` to your ApplicationController
+1. Setting resource.current_user = current_user in your controller update action directly.
+2. Add `before_action -> { @thing.current_user = current_user }` to your ApplicationController
 3. Using `Effective::CrudController` to do this automatically.
 
 This restriction is only applied when running within the rails server. Not on rails console or db:seeds.
@@ -319,5 +315,3 @@ This model implements the https://github.com/ryanb/cancan/wiki/Role-Based-Author
 4. Push to the branch (`git push origin my-new-feature`)
 5. Bonus points for test coverage
 6. Create new Pull Request
-
-

@@ -1,5 +1,3 @@
-require 'effective_roles/set_current_user'
-
 module EffectiveRoles
   class Engine < ::Rails::Engine
     engine_name 'effective_roles'
@@ -8,16 +6,6 @@ module EffectiveRoles
     initializer 'effective_roles.active_record' do |app|
       ActiveSupport.on_load :active_record do
         ActiveRecord::Base.extend(ActsAsRoleRestricted::Base)
-      end
-    end
-
-    # Register the log_page_views concern so that it can be called in ActionController or elsewhere
-    initializer 'effective_logging.log_changes_action_controller' do |app|
-      Rails.application.config.to_prepare do
-        ActiveSupport.on_load :action_controller do
-          require 'effective_roles/set_current_user'
-          ActionController::Base.include(EffectiveRoles::SetCurrentUser::ActionController)
-        end
       end
     end
 

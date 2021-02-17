@@ -106,10 +106,12 @@ module EffectiveRoles
   def self.assignable_roles_collection(resource, current_user = nil, multiple: nil)
     return config.roles unless assignable_roles_present?(resource)
 
-    current_user ||= (EffectiveRoles.current_user || (EffectiveLogging.current_user if defined?(EffectiveLogging)))
-
     if current_user && !current_user.respond_to?(:is_role_restricted?)
       raise('expected current_user to respond to is_role_restricted?')
+    end
+
+    if current_user.blank?
+      raise('expected a current_user when using assignable_roles')
     end
 
     if !resource.respond_to?(:is_role_restricted?)
