@@ -6,9 +6,7 @@ module EffectiveRoles
   # mattr_accessor :roles
   # mattr_accessor :role_descriptions
   # mattr_accessor :assignable_roles
-
   # mattr_accessor :layout
-  # mattr_accessor :authorization_method
 
   def self.config(namespace = nil)
     @config ||= ActiveSupport::OrderedOptions.new
@@ -27,32 +25,6 @@ module EffectiveRoles
 
   def self.permitted_params
     { roles: [] }
-  end
-
-  def self.authorized?(controller, action, resource)
-    @_exceptions ||= [Effective::AccessDenied, (CanCan::AccessDenied if defined?(CanCan)), (Pundit::NotAuthorizedError if defined?(Pundit))].compact
-
-    return !!config.authorization_method unless config.authorization_method.respond_to?(:call)
-    controller = controller.controller if controller.respond_to?(:controller)
-
-    begin
-      !!(controller || self).instance_exec((controller || self), action, resource, &config.authorization_method)
-    rescue *@_exceptions
-      false
-    end
-  end
-
-  def self.authorize!(controller, action, resource)
-    raise Effective::AccessDenied unless authorized?(controller, action, resource)
-  end
-
-  # This is set by the "set_effective_roles_current_user" before_filter.
-  def self.current_user=(user)
-    @effective_roles_current_user = user
-  end
-
-  def self.current_user
-    @effective_roles_current_user
   end
 
   # This method converts whatever is given into its roles
@@ -108,10 +80,6 @@ module EffectiveRoles
 
     if current_user && !current_user.respond_to?(:is_role_restricted?)
       raise('expected current_user to respond to is_role_restricted?')
-    end
-
-    if current_user.blank?
-      raise('expected a current_user when using assignable_roles')
     end
 
     if !resource.respond_to?(:is_role_restricted?)

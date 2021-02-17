@@ -1,7 +1,7 @@
 module Admin
   class RolesController < ApplicationController
     before_action(:authenticate_user!) if defined?(Devise)
-    before_action { EffectiveRoles.authorize!(self, :admin, :effective_roles) }
+    before_action { EffectiveResources.authorize!(self, :admin, :effective_roles) }
 
     include Effective::CrudController
 

@@ -67,34 +67,8 @@ EffectiveRoles.setup do |config|
   # }
 
   # Authorization Method
-  #
-  # This doesn't have anything to do with the roles themselves.
-  # It's only used in two places:
-  # - For the effective_roles_summary_table() helper method
-  # - The /admin/roles page check
-  #
-  # It should match the authorization check used by your application
-  #
-  # This method is called by all controller actions with the appropriate action and resource
-  # If the method returns false, an Effective::AccessDenied Error will be raised (see README.md for complete info)
-  #
-  # Use via Proc (and with CanCan):
-  # config.authorization_method = Proc.new { |controller, action, resource| can?(action, resource) }
-  #
-  # Use via custom method:
-  # config.authorization_method = :my_authorization_method
-  #
-  # And then in your application_controller.rb:
-  #
-  # def my_authorization_method(action, resource)
-  #   current_user.is?(:admin)
-  # end
-  #
-  # Or disable the check completely:
-  # config.authorization_method = false
-  config.authorization_method = Proc.new { |controller, action, resource| authorize!(action, resource) } # CanCanCan
+  # This gem serves an /admin/roles endpoint that calls EffectiveResources.authorize!
 
   # Layout Settings
-  # Configure the Layout per controller, or all at once
   # config.layout = 'admin'
 end
