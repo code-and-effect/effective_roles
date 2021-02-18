@@ -1,27 +1,16 @@
 require 'effective_resources'
+require 'effective_resources/effective_engine'
+
 require 'effective_roles/engine'
 require 'effective_roles/version'
 
 module EffectiveRoles
-  # mattr_accessor :roles
-  # mattr_accessor :role_descriptions
-  # mattr_accessor :assignable_roles
-  # mattr_accessor :layout
 
-  def self.config(namespace = nil)
-    @config ||= ActiveSupport::OrderedOptions.new
-    namespace ||= Tenant.current if defined?(Tenant)
-
-    if namespace
-      @config[namespace] ||= ActiveSupport::OrderedOptions.new
-    else
-      @config
-    end
+  def self.config_keys
+    [:roles, :role_descriptions, :assignable_roles, :layout]
   end
 
-  def self.setup(namespace = nil, &block)
-    yield(config(namespace))
-  end
+  include EffectiveEngine
 
   def self.permitted_params
     { roles: [] }
