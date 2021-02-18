@@ -71,18 +71,18 @@ module ActsAsRoleRestricted
     def with_role_sql(*roles)
       roles = roles.flatten.compact
       roles = roles.first.roles if roles.length == 1 && roles.first.respond_to?(:roles)
-      roles = (roles.map { |role| role.to_sym } & EffectiveRoles.config.roles)
+      roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
 
-      roles.map { |role| "(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.config.roles.index(role) }.join(' OR ')
+      roles.map { |role| "(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' OR ')
     end
 
     def without_role(*roles)
       roles = roles.flatten.compact
       roles = roles.first.roles if roles.length == 1 && roles.first.respond_to?(:roles)
-      roles = (roles.map { |role| role.to_sym } & EffectiveRoles.config.roles)
+      roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
 
       where(
-        roles.map { |role| "NOT(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.config.roles.index(role) }.join(' AND ')
+        roles.map { |role| "NOT(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' AND ')
       ).or(where(roles_mask: nil))
     end
   end

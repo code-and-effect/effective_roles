@@ -5,7 +5,7 @@ module Admin
 
     include Effective::CrudController
 
-    if (config = EffectiveRoles.config.layout)
+    if (config = EffectiveRoles.layout)
       layout(config.kind_of?(Hash) ? config[:admin] : config)
     end
 

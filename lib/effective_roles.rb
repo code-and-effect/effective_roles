@@ -1,6 +1,4 @@
 require 'effective_resources'
-require 'effective_resources/effective_engine'
-
 require 'effective_roles/engine'
 require 'effective_roles/version'
 
@@ -10,7 +8,7 @@ module EffectiveRoles
     [:roles, :role_descriptions, :assignable_roles, :layout]
   end
 
-  include EffectiveEngine
+  include EffectiveGem
 
   def self.permitted_params
     { roles: [] }
@@ -22,11 +20,11 @@ module EffectiveRoles
     if obj.respond_to?(:is_role_restricted?)
      obj.roles
     elsif obj.kind_of?(Integer)
-      config.roles.reject { |r| (obj & 2 ** config.roles.index(r)).zero? }
+      roles.reject { |r| (obj & 2 ** config.roles.index(r)).zero? }
     elsif obj.kind_of?(Symbol)
-      Array(config.roles.find { |role| role == obj })
+      Array(roles.find { |role| role == obj })
     elsif obj.kind_of?(String)
-      Array(config.roles.find { |role| role == obj.to_sym })
+      Array(roles.find { |role| role == obj.to_sym })
     elsif obj.kind_of?(Array)
       obj.map { |obj| roles_for(obj) }.flatten.compact
     elsif obj.nil?
@@ -42,7 +40,7 @@ module EffectiveRoles
   end
 
   def self.roles_collection(resource, current_user = nil, only: nil, except: nil, multiple: nil)
-    if config.assignable_roles.present?
+    if assignable_roles.present?
       raise('expected object to respond to is_role_restricted?') unless resource.respond_to?(:is_role_restricted?)
       raise('expected current_user to respond to is_role_restricted?') if current_user && !current_user.respond_to?(:is_role_restricted?)
     end
@@ -52,7 +50,7 @@ module EffectiveRoles
     multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
     assignable = assignable_roles_collection(resource, current_user, multiple: multiple)
 
-    config.roles.map do |role|
+    roles.map do |role|
       next if only.present? && !only.include?(role)
       next if except.present? && except.include?(role)
 
@@ -65,7 +63,7 @@ module EffectiveRoles
   end
 
   def self.assignable_roles_collection(resource, current_user = nil, multiple: nil)
-    return config.roles unless assignable_roles_present?(resource)
+    return roles unless assignable_roles_present?(resource)
 
     if current_user && !current_user.respond_to?(:is_role_restricted?)
       raise('expected current_user to respond to is_role_restricted?')
@@ -75,8 +73,8 @@ module EffectiveRoles
       raise('expected current_user to respond to is_role_restricted?')
     end
 
-    assigned_roles = if config.assignable_roles.kind_of?(Hash)
-      assignable = (config.assignable_roles[resource.class.to_s] || config.assignable_roles || {})
+    assigned_roles = if assignable_roles.kind_of?(Hash)
+      assignable = (assignable_roles[resource.class.to_s] || assignable_roles || {})
       assigned = [] # our return value
 
       if current_user.blank?
@@ -96,8 +94,8 @@ module EffectiveRoles
       end
 
       assigned
-    elsif config.assignable_roles.kind_of?(Array)
-      config.assignable_roles
+    elsif assignable_roles.kind_of?(Array)
+      assignable_roles
     end.uniq
 
     # Check boxes
@@ -109,27 +107,27 @@ module EffectiveRoles
   end
 
   def self.assignable_roles_present?(resource)
-    return false unless config.assignable_roles.present?
+    return false unless assignable_roles.present?
 
-    raise 'EffectiveRoles config.assignable_roles_for must be a Hash or Array' unless [Hash, Array].include?(config.assignable_roles.class)
+    raise 'EffectiveRoles config.assignable_roles_for must be a Hash or Array' unless [Hash, Array].include?(assignable_roles.class)
     raise('expected resource to respond to is_role_restricted?') unless resource.respond_to?(:is_role_restricted?)
 
-    if config.assignable_roles.kind_of?(Array)
-      config.assignable_roles
-    elsif config.assignable_roles.key?(resource.class.to_s)
-      config.assignable_roles[resource.class.to_s]
+    if assignable_roles.kind_of?(Array)
+      assignable_roles
+    elsif assignable_roles.key?(resource.class.to_s)
+      assignable_roles[resource.class.to_s]
     else
-      config.assignable_roles
+      assignable_roles
     end.present?
   end
 
   private
 
   def self.role_description(role, obj = nil)
-    raise 'EffectiveRoles config.role_descriptions must be a Hash' unless config.role_descriptions.kind_of?(Hash)
+    raise 'EffectiveRoles config.role_descriptions must be a Hash' unless role_descriptions.kind_of?(Hash)
 
-    description = config.role_descriptions.dig(obj.class.to_s, role) if obj.present?
-    description ||= config.role_descriptions[role]
+    description = role_descriptions.dig(obj.class.to_s, role) if obj.present?
+    description ||= role_descriptions[role]
     description || ''
   end
 

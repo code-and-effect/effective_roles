@@ -2,7 +2,7 @@ module EffectiveRolesHelper
   def effective_roles_summary(obj, options = {}) # User or a Post, any acts_as_roleable
     raise 'expected an acts_as_roleable object' unless obj.respond_to?(:roles)
 
-    descriptions = EffectiveRoles.config.role_descriptions[obj.class.name] || EffectiveRoles.config.role_descriptions || {}
+    descriptions = EffectiveRoles.role_descriptions[obj.class.name] || EffectiveRoles.role_descriptions || {}
     opts = { obj: obj, roles: obj.roles, descriptions: descriptions }.merge(options)
 
     render partial: 'effective/roles/summary', locals: opts
@@ -17,7 +17,7 @@ module EffectiveRolesHelper
     raise 'Expected argument to be a Hash' unless opts.kind_of?(Hash)
 
     roles = Array(opts[:roles]).presence
-    roles ||= [:public, :signed_in] + EffectiveRoles.config.roles
+    roles ||= [:public, :signed_in] + EffectiveRoles.roles
 
     if opts[:only].present?
       klasses = Array(opts[:only])
@@ -103,7 +103,7 @@ module EffectiveRolesHelper
 
   # This is used by the effective_roles_summary_table helper method
   def effective_roles_authorization_level(controller, role, resource)
-    authorization_method = EffectiveRoles.config.authorization_method
+    authorization_method = EffectiveResources.authorization_method
 
     raise('expected an authorization method') unless (authorization_method.respond_to?(:call) || authorization_method.kind_of?(Symbol))
     return :unknown unless (controller.current_user rescue nil).respond_to?(:roles=)
