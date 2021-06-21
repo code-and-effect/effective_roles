@@ -29,7 +29,7 @@ module ActsAsRoleRestricted
 
     validates :roles_mask, numericality: true, allow_nil: true
 
-    validate(if: -> { changes.include?(:roles_mask) && EffectiveRoles.assignable_roles_present?(self) }) do
+    validate(if: -> { changes.include?(:roles_mask) && EffectiveRoles.assignable_roles_present?(self) && current_user.present? }) do
       roles_was = EffectiveRoles.roles_for(changes[:roles_mask].first)
       changed = (roles + roles_was) - (roles & roles_was)  # XOR
 
