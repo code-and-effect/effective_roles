@@ -39,7 +39,7 @@ module EffectiveRoles
     roles_for(roles).map { |r| 2 ** config.roles.index(r) }.sum
   end
 
-  def self.roles_collection(resource, current_user = nil, only: nil, except: nil, multiple: nil)
+  def self.roles_collection(resource, current_user = nil, only: nil, except: nil, multiple: nil, skip_disabled: nil)
     if assignable_roles.present?
       raise('expected object to respond to is_role_restricted?') unless resource.respond_to?(:is_role_restricted?)
       raise('expected current_user to respond to is_role_restricted?') if current_user && !current_user.respond_to?(:is_role_restricted?)
@@ -49,15 +49,19 @@ module EffectiveRoles
     except = Array(except).compact
     multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
     assignable = assignable_roles_collection(resource, current_user, multiple: multiple)
+    skip_disabled = assignable_roles.kind_of?(Hash) if skip_disabled.nil?
 
     roles.map do |role|
       next if only.present? && !only.include?(role)
       next if except.present? && except.include?(role)
 
+      disabled = !assignable.include?(role)
+      next if disabled && skip_disabled
+
       [
         "#{role}<p class='help-block text-muted'>#{role_description(role, resource)}</p>".html_safe,
         role,
-        ({:disabled => :disabled} unless assignable.include?(role))
+        ({:disabled => :disabled} if disabled)
       ]
     end.compact
   end
