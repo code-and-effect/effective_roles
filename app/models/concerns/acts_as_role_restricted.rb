@@ -53,6 +53,8 @@ module ActsAsRoleRestricted
   end
 
   module ClassMethods
+    def acts_as_role_restricted?; true; end
+
     # Call with for_role(:admin) or for_role(@user.roles) or for_role([:admin, :member]) or for_role(:admin, :member, ...)
 
     # Returns all records which have been assigned any of the the given roles
@@ -87,17 +89,42 @@ module ActsAsRoleRestricted
     end
   end
 
-  def roles=(roles)
-    self.roles_mask = EffectiveRoles.roles_mask_for(roles)
-  end
-
   def roles
     EffectiveRoles.roles_for(roles_mask)
   end
 
+  def roles=(roles)
+    self.roles_mask = EffectiveRoles.roles_mask_for(roles)
+  end
+
+  def add_role(role)
+    raise('expected role to be a symbol') unless role.kind_of?(Symbol)
+    raise('unknown role') unless EffectiveRoles.roles_mask_for(role) > 0
+
+    assign_attributes(roles: roles | [role])
+  end
+
+  def add_role!(role)
+    add_role(role); save!
+  end
+
+  def remove_role(role)
+    raise('expected role to be a symbol') unless role.kind_of?(Symbol)
+    raise('unknown role') unless EffectiveRoles.roles_mask_for(role) > 0
+
+    assign_attributes(roles: roles - [role])
+  end
+
+  def remove_role!(role)
+    remove_role(role); save!
+  end
+
   # if user.is? :admin
   def is?(role)
-    roles.include?(role.try(:to_sym))
+    raise('expected role to be a symbol') unless role.kind_of?(Symbol)
+    raise('unknown role') unless EffectiveRoles.roles_mask_for(role) > 0
+
+    roles.include?(role)
   end
 
   # if user.is_any?(:admin, :editor)
