@@ -102,12 +102,7 @@ module EffectiveRoles
       assignable_roles
     end.uniq
 
-    # Check boxes
-    multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
-    return assigned_roles if multiple
-
-    # Radios
-    (resource.roles - assigned_roles).present? ? [] : assigned_roles
+    assigned_roles
   end
 
   def self.assignable_roles_present?(resource)
