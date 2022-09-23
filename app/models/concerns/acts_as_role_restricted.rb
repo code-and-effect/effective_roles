@@ -98,8 +98,8 @@ module ActsAsRoleRestricted
   end
 
   def add_role(role)
-    raise('expected role to be a symbol') unless role.kind_of?(Symbol)
-    raise('unknown role') unless EffectiveRoles.roles_mask_for(role) > 0
+    raise("expected role to be a symbol but got #{role || 'nil'}") unless role.kind_of?(Symbol)
+    raise("unknown role :#{role}") unless EffectiveRoles.roles_mask_for(role) > 0
 
     assign_attributes(roles: roles | [role])
   end
@@ -109,8 +109,8 @@ module ActsAsRoleRestricted
   end
 
   def remove_role(role)
-    raise('expected role to be a symbol') unless role.kind_of?(Symbol)
-    raise('unknown role') unless EffectiveRoles.roles_mask_for(role) > 0
+    raise("expected role to be a symbol but got #{role || 'nil'}") unless role.kind_of?(Symbol)
+    raise("unknown role :#{role}") unless EffectiveRoles.roles_mask_for(role) > 0
 
     assign_attributes(roles: roles - [role])
   end
@@ -121,8 +121,8 @@ module ActsAsRoleRestricted
 
   # if user.is? :admin
   def is?(role)
-    raise('expected role to be a symbol') unless role.kind_of?(Symbol)
-    raise('unknown role') unless EffectiveRoles.roles_mask_for(role) > 0
+    raise("expected role to be a symbol but got #{role || 'nil'}") unless role.kind_of?(Symbol)
+    raise("unknown role :#{role}") unless EffectiveRoles.roles_mask_for(role) > 0
 
     roles.include?(role)
   end
