@@ -59,7 +59,7 @@ module EffectiveRoles
       next if disabled && skip_disabled
 
       [
-        "#{role}<p class='help-block text-muted'>#{role_description(role, resource)}</p>".html_safe,
+        "#{role}<small class='form-text text-muted'>#{role_description(role, resource)}</small>".html_safe,
         role,
         ({:disabled => :disabled} if disabled)
       ]
