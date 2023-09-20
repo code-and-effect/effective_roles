@@ -8,7 +8,12 @@ class RolesTest < ActiveSupport::TestCase
     assert user.add_role!(:admin)
     assert user.is?(:admin)
 
+    assert user.add_role!(:member)
+    assert user.is?(:admin)
+    assert user.is?(:member)
+
     assert user.remove_role!(:admin)
     refute user.is?(:admin)
+    assert user.is?(:member)
   end
 end

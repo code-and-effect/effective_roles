@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_roles (2.4.0)
+    effective_roles (2.5.0)
       effective_resources
       rails
 
