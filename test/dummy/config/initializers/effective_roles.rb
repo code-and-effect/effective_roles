@@ -28,6 +28,12 @@ EffectiveRoles.setup do |config|
     :member => 'cannot access admin area.  Can see all content in members-only sections of the website.'
   }
 
+  # config.role_colors
+  # ========================
+  # Assign a bootstrap color to a role. Optional.
+  # Used by the roles_badges() helper to display this role as a badge
+  config.role_colors = { superadmin: :primary, admin: :secondary }
+
   # config.assignable_roles
   # Which roles can be assigned by whom
   # =======================

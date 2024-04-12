@@ -1,4 +1,21 @@
 module EffectiveRolesHelper
+
+  def roles_badges(obj)
+    roles = Array(obj.try(:roles) || obj) - [nil, '']
+
+    if (unexpected = roles - EffectiveRoles.roles).present?
+      raise "Unexpected value: #{unexpected}. Expected an acts_as_roleable object or an array of roles."
+    end
+
+    badges = roles.map do |role|
+      color = EffectiveRoles.color(role)
+
+      content_tag(:span, role, class: ("badge badge-#{color}" if color.present?), title: role.to_s.titleize)
+    end
+
+    badges.join(' ').html_safe
+  end
+
   def effective_roles_summary(obj, options = {}) # User or a Post, any acts_as_roleable
     raise 'expected an acts_as_roleable object' unless obj.respond_to?(:roles)
 

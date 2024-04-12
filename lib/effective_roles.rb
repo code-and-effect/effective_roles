@@ -5,7 +5,7 @@ require 'effective_roles/version'
 module EffectiveRoles
 
   def self.config_keys
-    [:roles, :role_descriptions, :assignable_roles, :layout]
+    [:roles, :role_descriptions, :role_colors, :assignable_roles, :layout]
   end
 
   include EffectiveGem
@@ -37,6 +37,11 @@ module EffectiveRoles
   # EffectiveRoles.roles_mask_for(:admin, :member)
   def self.roles_mask_for(*roles)
     roles_for(roles).map { |r| 2 ** config.roles.index(r) }.sum
+  end
+
+  def self.color(role)
+    raise('expected a role') unless role.kind_of?(Symbol)
+    (role_colors || {})[role]
   end
 
   def self.roles_collection(resource, current_user = nil, only: nil, except: nil, multiple: nil, skip_disabled: nil)

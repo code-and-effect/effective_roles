@@ -16,4 +16,11 @@ class RolesTest < ActiveSupport::TestCase
     refute user.is?(:admin)
     assert user.is?(:member)
   end
+
+  test 'roles_badges' do
+    assert_equal :primary, EffectiveRoles.color(:superadmin)
+    assert_equal :secondary, EffectiveRoles.color(:admin)
+    assert_nil EffectiveRoles.color(:member)
+  end
+
 end

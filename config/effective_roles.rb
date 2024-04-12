@@ -23,10 +23,16 @@ EffectiveRoles.setup do |config|
   # Or just keep it simple, and use this Hash syntax of permissions for every resource
   #
   config.role_descriptions = {
-    :superadmin => 'full access to everything. Can manage users and all website content.',
-    :admin => 'full access to website content.  Cannot manage users.',
-    :member => 'cannot access admin area.  Can see all content in members-only sections of the website.'
+    superadmin: 'full access to everything. Can manage users and all website content.',
+    admin: 'full access to website content.  Cannot manage users.',
+    member: 'cannot access admin area.  Can see all content in members-only sections of the website.'
   }
+
+  # config.role_colors
+  # ========================
+  # Assign a bootstrap color to a role. Optional.
+  # Used by the roles_badges() helper to display this role as a badge
+  # config.role_colors = { superadmin: :primary, admin: :secondary, member: :light }
 
   # config.assignable_roles
   # Which roles can be assigned by whom
