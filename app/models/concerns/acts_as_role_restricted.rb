@@ -73,7 +73,11 @@ module ActsAsRoleRestricted
     def with_role_sql(*roles)
       roles = roles.flatten.compact
       roles = roles.first.roles if roles.length == 1 && roles.first.respond_to?(:roles)
-      roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
+      roles = roles.map { |role| role.to_sym }
+
+      if(invalid = (roles - EffectiveRoles.roles)).present?
+        raise("unknown role :#{invalid.to_sentence}")
+      end
 
       roles.map { |role| "(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' OR ')
     end
@@ -81,7 +85,11 @@ module ActsAsRoleRestricted
     def without_role(*roles)
       roles = roles.flatten.compact
       roles = roles.first.roles if roles.length == 1 && roles.first.respond_to?(:roles)
-      roles = (roles.map { |role| role.to_sym } & EffectiveRoles.roles)
+      roles = roles.map { |role| role.to_sym }
+
+      if(invalid = (roles - EffectiveRoles.roles)).present?
+        raise("unknown role :#{invalid.to_sentence}")
+      end
 
       where(
         roles.map { |role| "NOT(#{self.table_name}.roles_mask & %d > 0)" % 2**EffectiveRoles.roles.index(role) }.join(' AND ')
