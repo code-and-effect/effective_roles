@@ -24,12 +24,14 @@ module ActsAsRoleRestricted
   included do
     attr_accessor(:current_user) unless respond_to?(:current_user)
 
+    attr_accessor :skip_effective_roles_validation
+
     acts_as_role_restricted_options = @acts_as_role_restricted_opts.dup
     self.send(:define_method, :acts_as_role_restricted_options) { acts_as_role_restricted_options }
 
     validates :roles_mask, numericality: true, allow_nil: true
 
-    validate(if: -> { changes.include?(:roles_mask) && EffectiveRoles.assignable_roles_present?(self) && current_user.present? }) do
+    validate(if: -> { changes.include?(:roles_mask) && EffectiveRoles.assignable_roles_present?(self) && current_user.present? }, unless: -> { skip_effective_roles_validation }) do
       roles_was = EffectiveRoles.roles_for(changes[:roles_mask].first)
       changed = (roles + roles_was) - (roles & roles_was)  # XOR
 
