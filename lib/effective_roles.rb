@@ -44,7 +44,7 @@ module EffectiveRoles
     (role_colors || {})[role]
   end
 
-  def self.roles_collection(resource, current_user = nil, only: nil, except: nil, multiple: nil, skip_disabled: nil)
+  def self.roles_collection(resource, current_user = nil, only: nil, except: nil, skip_disabled: nil)
     if assignable_roles.present?
       raise('expected object to respond to is_role_restricted?') unless resource.respond_to?(:is_role_restricted?)
       raise('expected current_user to respond to is_role_restricted?') if current_user && !current_user.respond_to?(:is_role_restricted?)
@@ -52,11 +52,12 @@ module EffectiveRoles
 
     only = Array(only).compact
     except = Array(except).compact
-    multiple = resource.acts_as_role_restricted_options[:multiple] if multiple.nil?
-    assignable = assignable_roles_collection(resource, current_user, multiple: multiple)
     skip_disabled = assignable_roles.kind_of?(Hash) if skip_disabled.nil?
 
-    roles.map do |role|
+    all_roles = assignable_roles_collection(resource)
+    assignable = assignable_roles_collection(resource, current_user)
+
+    all_roles.map do |role|
       next if only.present? && !only.include?(role)
       next if except.present? && except.include?(role)
 
@@ -71,7 +72,7 @@ module EffectiveRoles
     end.compact
   end
 
-  def self.assignable_roles_collection(resource, current_user = nil, multiple: nil)
+  def self.assignable_roles_collection(resource, current_user = nil)
     return roles unless assignable_roles_present?(resource)
 
     if current_user && !current_user.respond_to?(:is_role_restricted?)
