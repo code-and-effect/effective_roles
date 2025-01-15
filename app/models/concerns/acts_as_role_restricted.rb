@@ -165,4 +165,8 @@ module ActsAsRoleRestricted
     roles.present?
   end
 
+  def roles_was
+    EffectiveRoles.roles_for(roles_mask_was)
+  end
+
 end
