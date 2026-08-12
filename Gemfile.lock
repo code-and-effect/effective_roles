@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_roles (2.8.1)
+    effective_roles (2.8.2)
       effective_resources
       rails
 
@@ -324,7 +324,6 @@ DEPENDENCIES
   effective_test_bot
   haml-rails
   pry-byebug
-  psych
   sqlite3
   wicked
 

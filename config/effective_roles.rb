@@ -5,13 +5,13 @@ EffectiveRoles.setup do |config|
   # ========================
   # This setting configures the text that is displayed by form helpers (see README.md)
   #
-  # Use this Hash syntax if you want different labels depending on the resource being editted
+  # Use this Hash syntax if you want different labels depending on the resource being edited
   #
   # config.role_descriptions = {
   #   'User' => {
   #     :superadmin => 'full access to everything. Can manage users and all website content.',
   #     :admin => 'full access to website content.  Cannot manage users.',
-  #     :member => 'cannot access admin area.  Can see all content in members-only sections of the website.''
+  #     :member => 'cannot access admin area.  Can see all content in members-only sections of the website.'
   #   },
   #   'Effective::Page' => {
   #     :superadmin => 'allow superadmins to see this page',
@@ -47,7 +47,7 @@ EffectiveRoles.setup do |config|
   # 2.) Using before_action :set_effective_roles_current_user
   # 3.) Using Effective::CrudController does this automatically.
   #
-  # Use this Hash syntax if you want different permissions depending on the resource being editted
+  # Use this Hash syntax if you want different permissions depending on the resource being edited
   #
   # config.assignable_roles = {
   #   'User' => {
